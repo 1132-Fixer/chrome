@@ -54,6 +54,7 @@ The zip's top level must contain `manifest.json` (not a wrapping folder).
 | `.gitignore`                     | Dev hygiene; irrelevant to the shipped extension.                                   |
 | `store-assets/`                  | Operator-produced promo + screenshots; only used during store submission, not at runtime. |
 | `STORE_PREP.md`                  | Internal submission checklist; reviewers don't need it and shipping it leaks process notes. |
+| `install.bat`                    | Windows-only local install helper; not extension runtime. Shipping it would confuse Web Store reviewers. |
 | `1132-fixer-chrome.zip`          | The zip itself; gitignored.                                                         |
 | `MEMORY.md` (if present)         | Local agent memory, never to be shipped.                                            |
 

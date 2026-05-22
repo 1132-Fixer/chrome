@@ -39,6 +39,10 @@ Per-origin clears use `chrome.browsingData.remove({origins})`, which only suppor
 3. **Load unpacked** → select this folder.
 4. Pin the extension and click the icon to open the popup.
 
+### Windows quick install helper
+
+Double-click `install.bat` in the repo root. It opens `chrome://extensions` and the extension folder in Explorer so you can click **Load unpacked** without typing paths. It does **not** silently install — Chrome blocks that for normal users without enterprise policy — and it does **not** require admin, change the registry, or download anything.
+
 If you replace `icons/icon.png`, regenerate the 16 / 48 / 128 sizes:
 
 ```powershell
@@ -88,6 +92,8 @@ Checks manifest JSON/MV3, referenced files exist, no telemetry/remote-code token
 | `scripts/make-icons.ps1`        | Regenerate `icon16/48/128.png`.                      |
 | `scripts/validate-extension.js` | Source-level validator + domain matcher unit tests.  |
 | `STORE_PREP.md`                 | Chrome Web Store packaging checklist + justifications. |
+| `install.bat`                   | Windows quick-install helper; opens Chrome extensions page and the repo folder. |
+| `PRIVACY_POLICY.md`             | Canonical privacy policy text.                       |
 
 ## License
 

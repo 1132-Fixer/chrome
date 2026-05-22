@@ -399,3 +399,28 @@ body::before {
   border: 1.5px solid rgba(255,255,255,0.12);
   background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
 }
+
+.all-sites-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 0 6px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(239, 68, 68, 0.55);
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.14), rgba(239, 68, 68, 0.05));
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.all-sites-warning[hidden] { display: none; }
+.all-sites-warning .warn-icon {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--red);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.all-sites-warning .warn-text {
+  flex: 1;
+}

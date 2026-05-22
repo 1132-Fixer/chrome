@@ -12,6 +12,7 @@ const els = IS_BROWSER ? {
   zoomBanner: document.getElementById('zoomBanner'),
   zoomBannerHost: document.getElementById('zoomBannerHost'),
   zoomFixBtn: document.getElementById('zoomFixBtn'),
+  allSitesWarning: document.getElementById('allSitesWarning'),
 } : {};
 
 const ZOOM_HOSTS = ['zoom.us', 'zoom.com'];
@@ -367,6 +368,11 @@ function wireScopeToggle() {
       const scope = getSelectedScope();
       els.customDomain.disabled = scope !== 'custom';
       if (scope === 'custom') els.customDomain.focus();
+      // Show explicit warning ONLY when user picks "All sites" scope.
+      // This makes the global-cache-wipe risk visible before the click.
+      if (els.allSitesWarning) {
+        els.allSitesWarning.hidden = scope !== 'all';
+      }
     });
   });
 }

@@ -1,0 +1,11 @@
+{
+  "name": "1132-fixer-chrome",
+  "version": "1.0.0",
+  "private": true,
+  "description": "1132 Fixer for Chrome — user-triggered cookie and site-data cleaner with ZOOM DETECTED → FIX ZOOM flow. MV3, no remote code, no telemetry.",
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "test": "node scripts/validate-extension.js",
+    "validate": "node scripts/validate-extension.js"
+  }
+}

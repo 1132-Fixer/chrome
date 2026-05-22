@@ -22,6 +22,14 @@ Per-origin clears use `chrome.browsingData.remove({origins})`, which only suppor
 
 `sessionStorage` is per-tab and not addressable by `chrome.browsingData`. The extension clears it via `chrome.scripting.executeScript` in the active tab only, when that tab matches the selected scope.
 
+### "All sites" warning
+
+When you pick the **All sites** scope, the popup displays an explicit red-bordered warning before you click **FIX NOW**:
+
+> ⚠ All sites wipes the GLOBAL HTTP cache plus cookies, storage, cache, and IndexedDB for EVERY site you have visited. Saved passwords, autofill, downloads, and browser history are NOT touched. Click only if you intend a full site-data reset.
+
+The warning is visible only while the **All sites** radio is selected. Switching back to **Current site** or **Custom domain** hides it. No clear runs until you click **FIX NOW**.
+
 ## Permissions
 
 | Permission       | Why we need it                                                                                          |

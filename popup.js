@@ -7,7 +7,17 @@ const els = {
   fixBtn: document.getElementById('fixBtn'),
   customDomain: document.getElementById('customDomain'),
   appVersion: document.getElementById('appVersion'),
+  zoomBanner: document.getElementById('zoomBanner'),
+  zoomBannerHost: document.getElementById('zoomBannerHost'),
+  zoomFixBtn: document.getElementById('zoomFixBtn'),
 };
+
+const ZOOM_HOSTS = ['zoom.us', 'zoom.com'];
+
+function isZoomHost(host) {
+  if (!host) return false;
+  return ZOOM_HOSTS.some(z => host === z || host.endsWith('.' + z));
+}
 
 const state = {
   currentOrigin: null,
@@ -157,6 +167,51 @@ async function reloadActiveTabIfMatches(host) {
   }
 }
 
+async function runZoomFix() {
+  els.zoomFixBtn.disabled = true;
+  els.fixBtn.disabled = true;
+  setStatus('scanning', 'WORKING');
+  clearLog();
+  log('FIX ZOOM', 'header');
+
+  const types = {
+    cookies: true,
+    localStorage: true,
+    cache: true,
+    indexedDB: true,
+  };
+
+  try {
+    for (const host of ZOOM_HOSTS) {
+      log(`-- ${host} --`, 'header');
+      const origins = [`https://${host}`, `http://${host}`];
+      await clearForOrigins(origins, types);
+      await clearCookiesForHost(host);
+    }
+    log('Zoom data cleared', 'success');
+    setStatus('done', 'ZOOM CLEARED');
+
+    const tab = await getActiveTab();
+    if (tab && tab.url) {
+      try {
+        const u = new URL(tab.url);
+        if (isZoomHost(u.hostname)) {
+          await chrome.tabs.reload(tab.id);
+          log(`Reloaded: ${u.hostname}`);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  } catch (e) {
+    log('Error: ' + (e && e.message ? e.message : String(e)), 'error');
+    setStatus('error', 'ERROR');
+  } finally {
+    els.zoomFixBtn.disabled = false;
+    els.fixBtn.disabled = false;
+  }
+}
+
 async function runFix() {
   els.fixBtn.disabled = true;
   setStatus('scanning', 'WORKING');
@@ -247,12 +302,17 @@ async function init() {
   setVersion();
   wireScopeToggle();
   els.fixBtn.addEventListener('click', runFix);
+  els.zoomFixBtn.addEventListener('click', runZoomFix);
   await detectActiveOrigin();
   if (state.currentHost) {
     setStatus('', 'READY · ' + state.currentHost);
     clearLog();
     log('Active tab', 'header');
     log(state.currentHost);
+    if (isZoomHost(state.currentHost)) {
+      els.zoomBanner.hidden = false;
+      els.zoomBannerHost.textContent = state.currentHost;
+    }
   } else {
     setStatus('', 'READY');
     clearLog();

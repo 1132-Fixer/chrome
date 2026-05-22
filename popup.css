@@ -111,6 +111,83 @@ body::before {
   margin: 8px 0 6px;
 }
 
+/* ===== ZOOM BANNER ===== */
+.zoom-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  margin: 4px 0 10px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(26, 111, 181, 0.55);
+  background:
+    linear-gradient(145deg, rgba(26, 111, 181, 0.22), rgba(245, 166, 35, 0.10));
+  box-shadow: 0 0 24px rgba(26, 111, 181, 0.18), inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+}
+.zoom-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 0%, rgba(245,166,35,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+.zoom-banner-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  z-index: 1;
+}
+.zoom-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2D8CFF;
+  box-shadow: 0 0 8px #2D8CFF;
+  animation: dotPulse 1.6s ease-in-out infinite;
+}
+.zoom-banner-title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #cfe6ff;
+}
+.zoom-banner-host {
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.zoom-banner-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  z-index: 1;
+}
+.btn-zoom {
+  padding: 12px 28px;
+  border-radius: 28px;
+  border: 2px solid rgba(255,255,255,0.18);
+  cursor: pointer;
+  background: linear-gradient(145deg, #4aa3ff, #2D8CFF, #1a6fb5);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  box-shadow: 0 0 28px rgba(45,140,255,0.35), 0 4px 16px rgba(0,0,0,0.4);
+  transition: all 0.25s ease;
+  z-index: 1;
+}
+.btn-zoom:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 0 44px rgba(45,140,255,0.55), 0 6px 22px rgba(0,0,0,0.5);
+}
+.btn-zoom:active:not(:disabled) { transform: scale(0.97); }
+.btn-zoom:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* ===== CHIPS ===== */
 .scope-row, .type-grid {
   display: flex;

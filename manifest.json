@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "1132 Fixer for Chrome",
+  "short_name": "1132 Fixer",
+  "version": "1.0.0",
+  "description": "One-click cookie and site-data cleaner. Pick scope and data types, then nuke. Inspired by the 1132 Fixer Zoom bypass tool.",
+  "author": "Justyn Gunnels",
+  "minimum_chrome_version": "114",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "1132 Fixer",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "cookies",
+    "browsingData",
+    "activeTab",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>1132 Fixer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <div class="status-badge" id="statusBadge"><span class="status-dot"></span><span id="statusBadgeText">Ready</span></div>
+    </div>
+    <div class="logo">
+      <img src="icons/icon128.png" alt="1132 Fixer">
+      <span class="logo-title">1132 FIXER</span>
+      <div class="logo-sep"></div>
+      <span class="logo-desc">Chrome Cookie &amp; Site-Data Cleaner</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="section-label">SCOPE</div>
+    <div class="scope-row" role="radiogroup" aria-label="Scope">
+      <label class="chip">
+        <input type="radio" name="scope" value="current" checked>
+        <span>Current site</span>
+      </label>
+      <label class="chip">
+        <input type="radio" name="scope" value="custom">
+        <span>Custom domain</span>
+      </label>
+      <label class="chip">
+        <input type="radio" name="scope" value="all">
+        <span>All sites</span>
+      </label>
+    </div>
+
+    <input type="text" id="customDomain" class="domain-input" placeholder="example.com" autocomplete="off" spellcheck="false" disabled>
+
+    <div class="section-label">DATA TYPES</div>
+    <div class="type-grid">
+      <label class="chip">
+        <input type="checkbox" data-type="cookies" checked>
+        <span>Cookies</span>
+      </label>
+      <label class="chip">
+        <input type="checkbox" data-type="localStorage" checked>
+        <span>Local &amp; Session Storage</span>
+      </label>
+      <label class="chip">
+        <input type="checkbox" data-type="cache" checked>
+        <span>Cache</span>
+      </label>
+      <label class="chip">
+        <input type="checkbox" data-type="indexedDB" checked>
+        <span>IndexedDB</span>
+      </label>
+    </div>
+
+    <div class="file-list" id="fileList">
+      <div class="file-item header">READY</div>
+      <div class="file-item">Pick scope and data types, then hit FIX NOW.</div>
+    </div>
+
+    <div class="button-container">
+      <button id="fixBtn" class="btn-delete">FIX NOW</button>
+    </div>
+
+    <p class="footer-warning">Clears the selected data and reloads the active tab</p>
+  </div>
+
+  <div class="footer">
+    <div class="hazard-bar"></div>
+    <div class="footer-content">
+      <span class="badge version-badge" id="appVersion">v1.0.0</span>
+      <span class="badge admin-badge">Chrome Extension</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

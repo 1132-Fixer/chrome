@@ -1,0 +1,14 @@
+title: 1132 Fixer for Chrome
+description: One-click cookie and site-data cleaner with a ZOOM DETECTED → FIX ZOOM flow. MV3, no telemetry, no remote code.
+theme: jekyll-theme-minimal
+include:
+  - PRIVACY_POLICY.md
+exclude:
+  - node_modules
+  - store-assets
+  - scripts
+  - install.bat
+  - STORE_PREP.md
+  - 1132-fixer-chrome.zip
+  - package.json
+  - .gitignore

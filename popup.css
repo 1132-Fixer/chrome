@@ -127,6 +127,7 @@ body::before {
   position: relative;
   overflow: hidden;
 }
+.zoom-banner[hidden] { display: none; }
 .zoom-banner::after {
   content: '';
   position: absolute;

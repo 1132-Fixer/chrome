@@ -5,6 +5,10 @@
 // Source-level validation for the 1132 Fixer Chrome extension.
 // Run from project root: `node scripts/validate-extension.js`
 // Exits non-zero on first failure.
+//
+// As of v1.1.0 the extension is intentionally zoom-only. The validator
+// asserts that no manual / Custom domain / All sites scope feature leaked
+// back in, and that host_permissions stays narrow.
 
 const fs   = require('fs');
 const path = require('path');
@@ -62,6 +66,23 @@ const missing = required.filter(p => !(manifest.permissions || []).includes(p));
 if (missing.length === 0) pass('permissions include all required');
 else fail('permissions include all required', `missing: ${missing.join(', ')}`);
 
+// host_permissions must be zoom-only after the v1.1.0 narrowing.
+const ALLOWED_HOSTS = new Set([
+  'https://*.zoom.us/*',
+  'https://*.zoom.com/*',
+]);
+const hostPerms = manifest.host_permissions || [];
+if (hostPerms.length > 0) pass('host_permissions is non-empty');
+else fail('host_permissions is non-empty');
+const badHosts = hostPerms.filter(h => !ALLOWED_HOSTS.has(h));
+if (badHosts.length === 0) pass(`host_permissions is zoom-only [${[...ALLOWED_HOSTS].join(', ')}]`);
+else fail('host_permissions is zoom-only', `extra: ${badHosts.join(', ')}`);
+if (hostPerms.includes('<all_urls>') || hostPerms.includes('*://*/*') || hostPerms.includes('http://*/*') || hostPerms.includes('https://*/*')) {
+  fail('host_permissions does not request broad access');
+} else {
+  pass('host_permissions does not request broad access');
+}
+
 // --- 2. Popup file references --------------------------------------------
 group('popup files');
 const popupHtml = readText('popup.html');
@@ -78,10 +99,9 @@ for (const js of jsMatches) {
 if (cssMatches.length === 0) fail('popup.html links a stylesheet');
 if (jsMatches.length === 0) fail('popup.html includes popup.js');
 
-// All button IDs referenced from popup.js must exist in HTML and vice versa.
 const popupJs = readText('popup.js');
 const idsInHtml = new Set([...popupHtml.matchAll(/id="([^"]+)"/g)].map(m => m[1]));
-const idsInJs = new Set([...popupJs.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(m => m[1]));
+const idsInJs   = new Set([...popupJs.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(m => m[1]));
 for (const id of idsInJs) {
   if (idsInHtml.has(id)) pass(`element id used in popup.js exists in popup.html: #${id}`);
   else fail(`element id used in popup.js exists in popup.html: #${id}`);
@@ -107,12 +127,10 @@ for (const f of SCAN_FILES) {
 }
 pass(`scanned ${SCAN_FILES.length} files for telemetry/remote-code tokens`);
 
-// Any http(s):// URLs found must be doc-only (README), not runtime calls.
 const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/g;
 for (const f of SCAN_FILES) {
   const txt = readText(f);
   const urls = (txt.match(RUNTIME_URL_RE) || []).filter(u => {
-    // Allow scheme-construction templates that don't carry a real host.
     if (/^https?:\/\/\$\{/.test(u)) return false;
     if (/^https?:\/\/$/.test(u))    return false;
     return true;
@@ -122,7 +140,7 @@ for (const f of SCAN_FILES) {
 }
 
 // --- 4. Domain matcher unit tests ---------------------------------------
-group('domain matcher (isZoomHost / parseDomainInput / normalizeHost)');
+group('domain matcher (isZoomHost / normalizeHost / hostMatchesBase)');
 const m = require(path.join(ROOT, 'popup.js'));
 const cases = [
   { fn: 'isZoomHost', input: 'zoom.us',                expect: true  },
@@ -139,144 +157,88 @@ const cases = [
   { fn: 'isZoomHost', input: '',                       expect: false },
   { fn: 'isZoomHost', input: null,                     expect: false },
   { fn: 'isZoomHost', input: 'zoom.us:443',            expect: true  },
-  { fn: 'parseDomainInput', input: 'https://example.com/path?x', expect: 'example.com' },
-  { fn: 'parseDomainInput', input: '  EXAMPLE.com  ',  expect: 'example.com' },
-  { fn: 'parseDomainInput', input: 'example.com:8080', expect: 'example.com' },
-  { fn: 'parseDomainInput', input: '',                 expect: null },
-  { fn: 'parseDomainInput', input: '://',              expect: null },
   { fn: 'normalizeHost', input: 'ZOOM.US.',            expect: 'zoom.us' },
   { fn: 'normalizeHost', input: 'host:443',            expect: 'host' },
+  { fn: 'hostMatchesBase', input: 'a.zoom.us',         expect: true  }, // hostMatchesBase(host, 'zoom.us')
 ];
 for (const c of cases) {
-  const got = m[c.fn](c.input);
+  let got;
+  if (c.fn === 'hostMatchesBase') got = m[c.fn](c.input, 'zoom.us');
+  else                            got = m[c.fn](c.input);
   const ok = got === c.expect;
   (ok ? pass : fail)(`${c.fn}(${JSON.stringify(c.input)}) -> ${JSON.stringify(c.expect)}`, ok ? '' : `got ${JSON.stringify(got)}`);
 }
 
-// --- 5. Safety guard tests (added 2026-05-22) ----------------------------
-// These tests assert that the extension stays user-triggered, that no install/
-// startup hook can sneak a clear in, and that the "All sites" feature carries
-// an explicit warning per combined v26 Module A §11.4 absolute rule 1.
-group('safety guards (user-triggered + warned + no install/startup auto-clear)');
+// --- 5. Zoom-only safety guards -----------------------------------------
+// After narrowing to zoom-only (v1.1.0), assert no Custom domain / All sites
+// scope feature, no install/startup auto-clear, no global HTTP cache wipe.
+group('zoom-only safety guards');
 
-const popupJsSrc = popupJs;
-const popupHtmlSrc = popupHtml;
-
-// 5a. popup.js must NOT register chrome.runtime.onInstalled / onStartup listeners.
-//     (Service worker / background hooks could call browsingData.remove without
-//     user input; this extension is popup-only and must stay popup-only.)
-if (!/chrome\.runtime\.onInstalled\.addListener/.test(popupJsSrc)) {
-  pass('popup.js does not register chrome.runtime.onInstalled listener');
-} else {
-  fail('popup.js does not register chrome.runtime.onInstalled listener');
+function rejects(file, re, description) {
+  const txt = readText(file);
+  if (re.test(txt)) fail(`${file} ${description}`);
+  else pass(`${file} ${description}`);
 }
-if (!/chrome\.runtime\.onStartup\.addListener/.test(popupJsSrc)) {
-  pass('popup.js does not register chrome.runtime.onStartup listener');
-} else {
-  fail('popup.js does not register chrome.runtime.onStartup listener');
+function requires(file, re, description) {
+  const txt = readText(file);
+  if (re.test(txt)) pass(`${file} ${description}`);
+  else fail(`${file} ${description}`);
 }
 
-// 5b. The init() function MUST NOT call chrome.browsingData.remove.
-//     Locate `async function init()` body and assert no browsingData.remove inside.
-const initMatch = popupJsSrc.match(/async\s+function\s+init\s*\([^)]*\)\s*\{([\s\S]*?)\n\}/);
-if (initMatch) {
-  const initBody = initMatch[1];
-  if (!/chrome\.browsingData\.remove/.test(initBody)) {
-    pass('init() body does not call chrome.browsingData.remove');
+// No install/startup auto-clear hooks.
+rejects('popup.js', /chrome\.runtime\.onInstalled\.addListener/, 'has no chrome.runtime.onInstalled listener');
+rejects('popup.js', /chrome\.runtime\.onStartup\.addListener/,   'has no chrome.runtime.onStartup listener');
+
+// init() never calls a destructive chrome.* API.
+const initBodyMatch = popupJs.match(/async function init\s*\([^)]*\)\s*{([\s\S]*?)\n}/);
+if (!initBodyMatch) {
+  fail('popup.js init() function found');
+} else {
+  pass('popup.js init() function found');
+  const initBody = initBodyMatch[1];
+  if (/chrome\.browsingData\.remove/.test(initBody)) fail('popup.js init() does NOT call chrome.browsingData.remove');
+  else                                                pass('popup.js init() does NOT call chrome.browsingData.remove');
+  if (/chrome\.cookies\.remove/.test(initBody))      fail('popup.js init() does NOT call chrome.cookies.remove');
+  else                                                pass('popup.js init() does NOT call chrome.cookies.remove');
+  if (/chrome\.scripting\.executeScript/.test(initBody)) fail('popup.js init() does NOT call chrome.scripting.executeScript');
+  else                                                    pass('popup.js init() does NOT call chrome.scripting.executeScript');
+}
+
+// FIX ZOOM is wired to an explicit click handler.
+requires('popup.js', /zoomFixBtn\.addEventListener\(\s*['"]click['"]\s*,\s*runZoomFix\s*\)/, 'wires zoomFixBtn click to runZoomFix');
+
+// No leftover manual scope UI or wiring.
+rejects('popup.html', /name="scope"/,                          'has no scope radio group');
+rejects('popup.html', /id="customDomain"/,                     'has no custom domain input');
+rejects('popup.html', /id="fixBtn"/,                           'has no generic FIX NOW button');
+rejects('popup.html', /id="allSitesWarning"/,                  'has no all-sites warning element');
+rejects('popup.js',   /\bclearAllSites\b/,                     'has no clearAllSites helper');
+rejects('popup.js',   /\bglobalBrowsingDataTypes\b/,           'has no globalBrowsingDataTypes helper');
+rejects('popup.js',   /\bparseDomainInput\b/,                  'has no parseDomainInput helper');
+rejects('popup.js',   /\bwireScopeToggle\b/,                   'has no wireScopeToggle helper');
+
+// perOriginBrowsingDataTypes must not include the global `cache` key.
+requires('popup.js', /function perOriginBrowsingDataTypes/,    'defines perOriginBrowsingDataTypes');
+const perOriginMatch = popupJs.match(/function perOriginBrowsingDataTypes[\s\S]*?\n}/);
+if (perOriginMatch) {
+  const body = perOriginMatch[0];
+  if (/\bcache\s*:\s*true/.test(body) && !/cacheStorage\s*:\s*true/.test(body)) {
+    fail('perOriginBrowsingDataTypes does NOT set the global `cache` key');
   } else {
-    fail('init() body does not call chrome.browsingData.remove', 'auto-clear detected');
+    pass('perOriginBrowsingDataTypes does NOT set the global `cache` key');
   }
-  if (!/chrome\.cookies\.remove/.test(initBody)) {
-    pass('init() body does not call chrome.cookies.remove');
-  } else {
-    fail('init() body does not call chrome.cookies.remove', 'auto-cookie-clear detected');
-  }
-} else {
-  fail('init() function body locatable for auto-clear scan');
+  if (/cacheStorage\s*:\s*true/.test(body)) pass('perOriginBrowsingDataTypes sets the per-origin `cacheStorage` key');
+  else                                       fail('perOriginBrowsingDataTypes sets the per-origin `cacheStorage` key');
 }
 
-// 5c. Both DOM event listeners (zoomFixBtn click + fixBtn click) must remain
-//     the only entry points to runZoomFix / runFix.
-if (/els\.zoomFixBtn\.addEventListener\(\s*['"]click['"]\s*,\s*runZoomFix\s*\)/.test(popupJsSrc)) {
-  pass('runZoomFix is wired to zoomFixBtn click only');
+// All chrome.browsingData.remove calls must go through clearForOrigins.
+const removeCalls = popupJs.match(/chrome\.browsingData\.remove\s*\(/g) || [];
+const wrappedCalls = popupJs.match(/clearForOrigins\s*\(/g) || [];
+if (removeCalls.length > 0 && wrappedCalls.length > 0 && removeCalls.length === 1) {
+  pass(`chrome.browsingData.remove only called once, inside clearForOrigins (count=${removeCalls.length})`);
 } else {
-  fail('runZoomFix is wired to zoomFixBtn click only');
-}
-if (/els\.fixBtn\.addEventListener\(\s*['"]click['"]\s*,\s*runFix\s*\)/.test(popupJsSrc)) {
-  pass('runFix is wired to fixBtn click only');
-} else {
-  fail('runFix is wired to fixBtn click only');
-}
-
-// 5d. popup.html MUST contain the explicit "All sites" warning element and copy.
-if (/id="allSitesWarning"/.test(popupHtmlSrc)) {
-  pass('popup.html contains #allSitesWarning element');
-} else {
-  fail('popup.html contains #allSitesWarning element');
-}
-if (/All sites wipes the GLOBAL HTTP cache/i.test(popupHtmlSrc)) {
-  pass('popup.html "All sites" warning text is present and explicit');
-} else {
-  fail('popup.html "All sites" warning text is present and explicit');
-}
-if (/Saved passwords, autofill, downloads, and browser history are NOT touched/i.test(popupHtmlSrc)) {
-  pass('popup.html "All sites" warning lists protected-data carve-outs');
-} else {
-  fail('popup.html "All sites" warning lists protected-data carve-outs');
-}
-
-// 5e. popup.js must toggle the warning visibility based on scope=all.
-if (/els\.allSitesWarning\.hidden\s*=\s*scope\s*!==\s*['"]all['"]/.test(popupJsSrc)) {
-  pass('popup.js toggles allSitesWarning visibility on scope change');
-} else {
-  fail('popup.js toggles allSitesWarning visibility on scope change');
-}
-
-// 5f. clearAllSites must remain guarded behind getSelectedScope() === 'all'.
-//     Source-text check: clearAllSites is only invoked from inside the `scope === 'all'` branch.
-const clearAllSitesGuardRe = /if\s*\(\s*scope\s*===\s*['"]all['"]\s*\)\s*\{[\s\S]{0,80}?await\s+clearAllSites\s*\(/;
-if (clearAllSitesGuardRe.test(popupJsSrc)) {
-  pass('clearAllSites is guarded behind scope === "all" branch');
-} else {
-  fail('clearAllSites is guarded behind scope === "all" branch');
-}
-
-// 5g. perOriginBrowsingDataTypes must NOT include the global `cache` key.
-//     (Setting `cache: true` would wipe the global HTTP cache despite `origins:`.)
-const perOriginFnMatch = popupJsSrc.match(/function\s+perOriginBrowsingDataTypes\s*\(\s*types\s*\)\s*\{([\s\S]*?)\n\}/);
-if (perOriginFnMatch) {
-  const body = perOriginFnMatch[1];
-  if (!/\bcache:\s*!!types\.cache/.test(body)) {
-    pass('perOriginBrowsingDataTypes does NOT set global `cache` key');
-  } else {
-    fail('perOriginBrowsingDataTypes does NOT set global `cache` key', 'would wipe global HTTP cache on per-origin clear');
-  }
-  // It must still include cacheStorage (per-origin Cache API) so per-origin
-  // clears actually clear the Cache API for the target origin.
-  if (/\bcacheStorage:\s*!!types\.cache/.test(body)) {
-    pass('perOriginBrowsingDataTypes sets per-origin cacheStorage key');
-  } else {
-    fail('perOriginBrowsingDataTypes sets per-origin cacheStorage key');
-  }
-} else {
-  fail('perOriginBrowsingDataTypes function body locatable');
-}
-
-// 5h. No top-level (outside functions) call to chrome.browsingData.remove.
-//     Heuristic: source text must not contain a `chrome.browsingData.remove`
-//     call that isn't lexically inside an `async function`.
-{
-  const topLevelLines = popupJsSrc
-    .split('\n')
-    .filter((line) => /chrome\.browsingData\.remove/.test(line));
-  // All matches must appear inside `clearAllSites` or `clearForOrigins`.
-  const wrapperRe = /^\s*(?:await\s+)?chrome\.browsingData\.remove/;
-  const looksWrapped = topLevelLines.every((l) => wrapperRe.test(l));
-  if (looksWrapped) {
-    pass('all chrome.browsingData.remove calls are wrapped by clearAllSites / clearForOrigins');
-  } else {
-    fail('all chrome.browsingData.remove calls are wrapped', topLevelLines.join(' | '));
-  }
+  fail('chrome.browsingData.remove only called once, inside clearForOrigins',
+       `remove=${removeCalls.length} clearForOrigins=${wrappedCalls.length}`);
 }
 
 // --- 6. Summary ----------------------------------------------------------

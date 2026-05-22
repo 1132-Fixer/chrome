@@ -11,11 +11,14 @@
  *   store-assets/01-zoom-detected.png
  *   store-assets/02-fix-complete.png
  *   store-assets/03-non-zoom-safe.png
- *   store-assets/05-manual-picker.png
  *
  * Screenshot #04 (chrome://extensions details/permissions) requires a real
  * Chromium load-unpacked flow — captured separately by
  * scripts/capture-extension-details.js.
+ *
+ * As of v1.1.0 the popup is intentionally zoom-only. The former
+ * 05-manual-picker shot was dropped along with the Custom domain / All sites
+ * scope feature.
  *
  * Resolves the globally-installed `playwright` so the repo does not gain a
  * node_modules dependency.
@@ -43,7 +46,7 @@ function chromeMock(activeUrl) {
   return `(() => {
     window.chrome = {
       runtime: {
-        getManifest: () => ({ name: '1132 Fixer for Chrome', version: '1.0.0', manifest_version: 3 }),
+        getManifest: () => ({ name: '1132 Fixer for Chrome', version: '1.1.0', manifest_version: 3 }),
       },
       tabs: {
         query: async () => [{ id: 1, url: ${JSON.stringify(activeUrl)} }],
@@ -112,20 +115,10 @@ async function shoot({ name, activeUrl, after }) {
     },
   });
 
-  // 03 — non-Zoom site, banner hidden, scope picker visible
+  // 03 — non-Zoom site, banner hidden, "Not a Zoom tab" card visible
   await shoot({
     name: '03-non-zoom-safe.png',
     activeUrl: 'https://example.com/',
-  });
-
-  // 05 — manual picker: select Custom domain, type a host
-  await shoot({
-    name: '05-manual-picker.png',
-    activeUrl: 'https://example.com/',
-    after: async (page) => {
-      await page.click('input[name="scope"][value="custom"]');
-      await page.fill('#customDomain', 'example.org');
-    },
   });
 
   console.log('done');

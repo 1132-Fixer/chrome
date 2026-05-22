@@ -14,7 +14,7 @@
       <img src="icons/icon128.png" alt="1132 Fixer">
       <span class="logo-title">1132 FIXER</span>
       <div class="logo-sep"></div>
-      <span class="logo-desc">Chrome Cookie &amp; Site-Data Cleaner</span>
+      <span class="logo-desc">Zoom Site-Data Cleaner</span>
     </div>
   </div>
 
@@ -29,65 +29,25 @@
       <span class="zoom-banner-sub">Clears zoom.us cookies, storage, cache &amp; IndexedDB, then reloads.</span>
     </div>
 
-    <div class="section-label">SCOPE</div>
-    <div class="scope-row" role="radiogroup" aria-label="Scope">
-      <label class="chip">
-        <input type="radio" name="scope" value="current" checked>
-        <span>Current site</span>
-      </label>
-      <label class="chip">
-        <input type="radio" name="scope" value="custom">
-        <span>Custom domain</span>
-      </label>
-      <label class="chip">
-        <input type="radio" name="scope" value="all">
-        <span>All sites</span>
-      </label>
+    <div class="non-zoom-card" id="nonZoomCard" hidden>
+      <div class="non-zoom-title">Not a Zoom tab</div>
+      <p class="non-zoom-body">
+        1132 Fixer only runs on <code>zoom.us</code> and <code>zoom.com</code>.
+        Open a Zoom tab, then click this icon again.
+      </p>
     </div>
 
-    <input type="text" id="customDomain" class="domain-input" placeholder="example.com" autocomplete="off" spellcheck="false" disabled>
-
-    <div class="all-sites-warning" id="allSitesWarning" hidden>
-      <span class="warn-icon" aria-hidden="true">⚠</span>
-      <span class="warn-text">All sites wipes the GLOBAL HTTP cache plus cookies, storage, cache, and IndexedDB for EVERY site you have visited. Saved passwords, autofill, downloads, and browser history are NOT touched. Click only if you intend a full site-data reset.</span>
-    </div>
-
-    <div class="section-label">DATA TYPES</div>
-    <div class="type-grid">
-      <label class="chip">
-        <input type="checkbox" data-type="cookies" checked>
-        <span>Cookies</span>
-      </label>
-      <label class="chip">
-        <input type="checkbox" data-type="localStorage" checked>
-        <span>Local &amp; Session Storage</span>
-      </label>
-      <label class="chip">
-        <input type="checkbox" data-type="cache" checked>
-        <span>Cache</span>
-      </label>
-      <label class="chip">
-        <input type="checkbox" data-type="indexedDB" checked>
-        <span>IndexedDB</span>
-      </label>
-    </div>
-
-    <div class="file-list" id="fileList">
+    <div class="file-list" id="fileList" hidden>
       <div class="file-item header">READY</div>
-      <div class="file-item">Pick scope and data types, then hit FIX NOW.</div>
     </div>
 
-    <div class="button-container">
-      <button id="fixBtn" class="btn-delete">FIX NOW</button>
-    </div>
-
-    <p class="footer-warning">Clears the selected data and reloads the active tab</p>
+    <p class="footer-warning">Clears Zoom-only site data and reloads the active Zoom tab.</p>
   </div>
 
   <div class="footer">
     <div class="hazard-bar"></div>
     <div class="footer-content">
-      <span class="badge version-badge" id="appVersion">v1.0.0</span>
+      <span class="badge version-badge" id="appVersion">v1.1.0</span>
       <span class="badge admin-badge">Chrome Extension</span>
     </div>
   </div>

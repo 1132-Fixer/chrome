@@ -1,44 +1,37 @@
 # 1132 Fixer for Chrome
 
-Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows). A Manifest V3 popup extension that gives you a deliberate, user-triggered cleaner for cookies and site data — with a dedicated **ZOOM DETECTED → FIX ZOOM** flow for the most common 1132-style problem.
+Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows). A Manifest V3 popup extension with a single, narrow purpose: clear Zoom site data and reload the active Zoom tab, so Zoom error 1132 and other stale-cookie sign-in loops go away.
 
 ## What it does
 
-- **On `zoom.us` / `zoom.com`:** the popup shows a **ZOOM DETECTED** banner and a one-tap **FIX ZOOM** button. Clicking it clears Zoom-only cookies, `localStorage`, `sessionStorage`, Cache API, and IndexedDB, then reloads the active Zoom tab.
-- **Manual picker:** pick **Current site / Custom domain / All sites**, pick the data types you want, then **FIX NOW**. The active tab reloads if its host matches.
-- **No auto-clearing.** Every clear is user-triggered. Opening the popup never deletes anything by itself.
+- **On `zoom.us` / `*.zoom.us` / `zoom.com` / `*.zoom.com`:** the popup shows a **ZOOM DETECTED** banner and a one-tap **FIX ZOOM** button. Clicking it clears Zoom-only cookies, `localStorage`, `sessionStorage`, Cache API, IndexedDB, and service worker registrations for `zoom.us` and `zoom.com`, then reloads the active Zoom tab.
+- **On any non-Zoom site:** the popup shows a small "Not a Zoom tab" card and offers no action. The extension cannot — and will not — clear data for non-Zoom hosts.
+- **No auto-clearing.** Every clear is user-triggered. Opening the popup never deletes anything by itself; nothing runs on install, startup, page-load, or a timer.
 - **No telemetry. No remote code. No external network calls.** Everything runs locally inside the popup.
 
-## What data each control clears
+## What FIX ZOOM clears
 
-| Surface           | Cookies        | `localStorage` | `sessionStorage`         | Cache API (per-origin) | IndexedDB     | HTTP Cache (global) |
-| ----------------- | -------------- | -------------- | ------------------------ | ---------------------- | ------------- | ------------------- |
-| **FIX ZOOM**      | `zoom.us` + `zoom.com` | same           | active tab only          | same                   | same          | — *(never)*         |
-| **Current site**  | active host    | active host    | active tab only          | active host            | active host   | — *(never)*         |
-| **Custom domain** | entered host   | entered host   | active tab if it matches | entered host           | entered host  | — *(never)*         |
-| **All sites**     | all            | all            | active tab only          | all                    | all           | yes                 |
+| Data type                       | Scope                                                |
+| ------------------------------- | ---------------------------------------------------- |
+| Cookies                         | `zoom.us`, `zoom.com`, and their subdomains          |
+| `localStorage`                  | Per-origin, `zoom.us` + `zoom.com`                   |
+| Cache API (`cacheStorage`)      | Per-origin, `zoom.us` + `zoom.com`                   |
+| IndexedDB                       | Per-origin, `zoom.us` + `zoom.com`                   |
+| Service worker registrations    | Per-origin, `zoom.us` + `zoom.com`                   |
+| `sessionStorage`                | Active tab only, when that tab is a Zoom tab        |
+| **Global HTTP cache**           | **Never** — only per-origin `cacheStorage` is cleared |
 
-Per-origin clears use `chrome.browsingData.remove({origins})`, which only supports per-origin scoping for `cookies`, `cacheStorage`, `indexedDB`, `localStorage`, and `serviceWorkers`. The global HTTP cache is **never** wiped from per-domain operations — it is only touched if you explicitly select **All sites**.
-
-`sessionStorage` is per-tab and not addressable by `chrome.browsingData`. The extension clears it via `chrome.scripting.executeScript` in the active tab only, when that tab matches the selected scope.
-
-### "All sites" warning
-
-When you pick the **All sites** scope, the popup displays an explicit red-bordered warning before you click **FIX NOW**:
-
-> ⚠ All sites wipes the GLOBAL HTTP cache plus cookies, storage, cache, and IndexedDB for EVERY site you have visited. Saved passwords, autofill, downloads, and browser history are NOT touched. Click only if you intend a full site-data reset.
-
-The warning is visible only while the **All sites** radio is selected. Switching back to **Current site** or **Custom domain** hides it. No clear runs until you click **FIX NOW**.
+The extension reads no values. The popup log surfaces counts only (for example, `Cookies removed for zoom.us: 17`).
 
 ## Permissions
 
-| Permission       | Why we need it                                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------------------------- |
-| `cookies`        | Enumerate and remove cookies for the selected domain via `chrome.cookies`.                              |
-| `browsingData`   | Per-origin clear of `localStorage`, `cacheStorage`, `indexedDB`, `serviceWorkers`, and cookies.         |
-| `activeTab`      | Read the active tab's URL when the popup opens; reload it after clearing.                               |
-| `scripting`      | Inject `sessionStorage.clear()` into the active tab (only after the user clicks FIX ZOOM / FIX NOW).    |
-| `<all_urls>`     | Required by `chrome.cookies` and `chrome.browsingData` for the **Custom domain** and **All sites** flows. The extension does **not** inject content scripts at install time and does **not** read page content. |
+| Permission                          | Why                                                                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `cookies`                           | Enumerate and remove cookies for `zoom.us` / `zoom.com` via `chrome.cookies`.                                                    |
+| `browsingData`                      | Per-origin clear of `localStorage`, `cacheStorage`, `indexedDB`, and `serviceWorkers` via `chrome.browsingData.remove({origins})`.|
+| `activeTab`                         | Read the active tab's URL when the popup opens (to detect Zoom) and reload it after clearing.                                    |
+| `scripting`                         | Inject a single `sessionStorage.clear()` line into the active tab, only after the user clicks **FIX ZOOM**.                      |
+| Host: `https://*.zoom.us/*`, `https://*.zoom.com/*` | Required by `chrome.cookies` and `chrome.browsingData` to operate on Zoom domains. No other hosts are requested.       |
 
 ## Install (unpacked, for development)
 
@@ -59,17 +52,17 @@ powershell -ExecutionPolicy Bypass -File scripts/make-icons.ps1
 
 ## Manual test checklist
 
-| # | Step                                                                                | Expected                                                          |
-| - | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 1 | Load unpacked, no errors in `chrome://extensions` for this extension.               | Extension card is green.                                          |
-| 2 | Visit `https://zoom.us`, open popup.                                                | **ZOOM DETECTED** banner shows host. **FIX ZOOM** button visible. |
-| 3 | Visit `https://www.zoom.us`, open popup.                                            | Banner shows.                                                     |
-| 4 | Visit `https://us02web.zoom.us`, open popup.                                        | Banner shows.                                                     |
-| 5 | Visit a non-Zoom site (e.g. `https://example.com`), open popup.                     | Banner **hidden**. Scope picker still works.                      |
-| 6 | On `https://zoom.us`, click **FIX ZOOM**.                                           | Log shows per-domain clears, success state, Zoom tab reloads.     |
-| 7 | Open DevTools on the popup before clicking. Click **FIX ZOOM**.                     | No JS errors. No external network requests.                       |
-| 8 | On any site, pick **Custom domain**, enter `example.com`, click **FIX NOW**.        | Per-origin clear runs against `example.com`. No reload of other tabs. |
-| 9 | Open popup on a `chrome://` page.                                                   | "No web origin in active tab" message. Picker still usable.       |
+| # | Step                                                                                | Expected                                                                                |
+| - | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1 | Load unpacked, no errors in `chrome://extensions` for this extension.               | Extension card is green.                                                                |
+| 2 | Visit `https://zoom.us`, open popup.                                                | **ZOOM DETECTED** banner shows host. **FIX ZOOM** button visible.                       |
+| 3 | Visit `https://www.zoom.us`, open popup.                                            | Banner shows.                                                                           |
+| 4 | Visit `https://us02web.zoom.us`, open popup.                                        | Banner shows.                                                                           |
+| 5 | Visit a non-Zoom site (e.g. `https://example.com`), open popup.                     | Banner **hidden**. Polished "Not a Zoom tab" card visible. No FIX action available.     |
+| 6 | On `https://zoom.us`, click **FIX ZOOM**.                                           | Log shows per-domain clears, success state `ZOOM CLEARED`, Zoom tab reloads.            |
+| 7 | Open DevTools on the popup before clicking. Click **FIX ZOOM**.                     | No JS errors. No external network requests.                                             |
+| 8 | Open popup on a `chrome://` page.                                                   | "Not a Zoom tab" card visible. No FIX action available.                                  |
+| 9 | Confirm only popup HTML/CSS/JS + chrome.* API calls — no `fetch`/`XHR`/`WebSocket`. | Static scan and DevTools network tab confirm zero external requests.                    |
 
 ## Source-level validation
 
@@ -77,7 +70,7 @@ powershell -ExecutionPolicy Bypass -File scripts/make-icons.ps1
 node scripts/validate-extension.js
 ```
 
-Checks manifest JSON/MV3, referenced files exist, no telemetry/remote-code tokens, no runtime URLs, and runs unit tests for the domain matcher (`isZoomHost`, `parseDomainInput`, `normalizeHost`) including deceptive hosts like `zoom.us.evil.com`, `evilzoom.us`, `notzoom.us`.
+Checks manifest JSON/MV3, narrow zoom-only host permissions (no `<all_urls>`), referenced files exist, no telemetry/remote-code tokens, no runtime URLs, and runs unit tests for the domain matcher (`isZoomHost`, `normalizeHost`, `hostMatchesBase`) including deceptive hosts like `zoom.us.evil.com`, `evilzoom.us`, `notzoom.us`. Additional safety guards assert no manual / Custom domain / All sites scope code or UI remains, no install/startup auto-clear hooks exist, and the per-origin clear path never sets the global HTTP `cache` key.
 
 ## Privacy posture
 
@@ -87,21 +80,22 @@ Checks manifest JSON/MV3, referenced files exist, no telemetry/remote-code token
 - No account required.
 - No user-content read or logged. Cookie/storage **values** are never read into JS or shown in the UI — only counts are displayed.
 - All clears are explicit and user-triggered.
+- Independent project. Not affiliated with Zoom Video Communications, Inc.
 
 ## Files
 
-| File                            | Purpose                                              |
-| ------------------------------- | ---------------------------------------------------- |
-| `manifest.json`                 | MV3 manifest.                                        |
-| `popup.html`                    | Popup markup.                                        |
-| `popup.css`                     | Styles (1132 Fixer dark/amber palette + Zoom blue).  |
-| `popup.js`                      | Scope/type detection, clear logic, Zoom shortcut.    |
-| `icons/`                        | Source `icon.png` + generated 16/48/128.             |
-| `scripts/make-icons.ps1`        | Regenerate `icon16/48/128.png`.                      |
-| `scripts/validate-extension.js` | Source-level validator + domain matcher unit tests.  |
-| `STORE_PREP.md`                 | Chrome Web Store packaging checklist + justifications. |
-| `install.bat`                   | Windows quick-install helper; opens Chrome extensions page and the repo folder. |
-| `PRIVACY_POLICY.md`             | Canonical privacy policy text.                       |
+| File                            | Purpose                                                                          |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| `manifest.json`                 | MV3 manifest. Zoom-only host permissions.                                        |
+| `popup.html`                    | Popup markup. ZOOM DETECTED banner + FIX ZOOM button + non-Zoom card.            |
+| `popup.css`                     | Styles (1132 Fixer dark/amber palette + Zoom blue accent).                       |
+| `popup.js`                      | Zoom-only detection, clear logic, and reload.                                    |
+| `icons/`                        | Source `icon.png` + generated 16/48/128.                                         |
+| `scripts/make-icons.ps1`        | Regenerate `icon16/48/128.png`.                                                  |
+| `scripts/validate-extension.js` | Source-level validator + domain matcher unit tests.                              |
+| `STORE_PREP.md`                 | Chrome Web Store packaging checklist + justifications.                            |
+| `install.bat`                   | Windows quick-install helper; opens Chrome extensions page and the repo folder.   |
+| `PRIVACY_POLICY.md`             | Canonical privacy policy text.                                                   |
 
 ## License
 

@@ -40,10 +40,33 @@ Run from the repo root:
 
 ```powershell
 Remove-Item -Force -ErrorAction SilentlyContinue 1132-fixer-chrome.zip
-Compress-Archive -Path manifest.json,popup.html,popup.css,popup.js,icons,LICENSE,README.md -DestinationPath 1132-fixer-chrome.zip -Force
+Compress-Archive -Path manifest.json,popup.html,popup.css,popup.js,icons,LICENSE,README.md,PRIVACY_POLICY.md -DestinationPath 1132-fixer-chrome.zip -Force
 ```
 
 The zip's top level must contain `manifest.json` (not a wrapping folder).
+
+### Intentional exclusions from the zip
+
+| Excluded                         | Reason                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| `.git/`                          | Source-control metadata; not addressable from the path list.                        |
+| `scripts/`                       | Dev tooling (validator, icon builder); not runtime code.                            |
+| `.gitignore`                     | Dev hygiene; irrelevant to the shipped extension.                                   |
+| `store-assets/`                  | Operator-produced promo + screenshots; only used during store submission, not at runtime. |
+| `STORE_PREP.md`                  | Internal submission checklist; reviewers don't need it and shipping it leaks process notes. |
+| `1132-fixer-chrome.zip`          | The zip itself; gitignored.                                                         |
+| `MEMORY.md` (if present)         | Local agent memory, never to be shipped.                                            |
+
+### Intentional inclusions in the zip
+
+| Included            | Reason                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `manifest.json`     | Required at zip root.                                                                             |
+| `popup.html/css/js` | Extension runtime.                                                                                |
+| `icons/`            | All four sizes (source + 16/48/128); ships the brand asset.                                        |
+| `LICENSE`           | MIT license, helpful for reviewers.                                                               |
+| `README.md`         | Reviewer-readable description of behavior and manual test steps.                                  |
+| `PRIVACY_POLICY.md` | Ships the canonical privacy text alongside the runtime so the public hosted URL can be audited against it. |
 
 ## Store listing fields
 
@@ -56,7 +79,7 @@ The zip's top level must contain `manifest.json` (not a wrapping folder).
 | Primary functionality  | Cookie & site-data cleaner                                                                           |
 | Single purpose         | See statement above.                                                                                 |
 | Permissions            | See justification table.                                                                             |
-| Privacy policy URL     | **TODO** — operator must host this URL publicly before submission. Placeholder: `https://<operator-domain>/1132-fixer-chrome/privacy`. Content can mirror **Privacy posture** in README.md. **Do not invent a URL.** |
+| Privacy policy URL     | **TODO** — operator must host the canonical text from [PRIVACY_POLICY.md](PRIVACY_POLICY.md) publicly before submission. Placeholder string only: `https://<operator-domain>/1132-fixer-chrome/privacy`. **Do not invent a URL.** |
 
 ### Long description (paste into store form, ≤16 000 chars — currently ~1.3 KB)
 
@@ -96,20 +119,34 @@ Put generated files in a local `store-assets/` directory (already covered by `.g
 | Asset                  | Spec                          | Target filename                       | Status   |
 | ---------------------- | ----------------------------- | ------------------------------------- | -------- |
 | Icon 128×128           | PNG, opaque or transparent    | `icons/icon128.png`                   | present  |
-| Small promo tile       | 440×280 PNG                   | `store-assets/promo-440x280.png`      | **TODO** |
-| Marquee promo (opt.)   | 1400×560 PNG                  | `store-assets/promo-1400x560.png`     | **TODO** |
+| Small promo tile       | 440×280 PNG (**required by store**) | `store-assets/promo-440x280.png`      | **TODO** |
+| Marquee promo          | 1400×560 PNG (optional)       | `store-assets/promo-1400x560.png`     | **TODO** |
+
+Promo-tile content rules (apply to all promo assets):
+
+- Reuse the same 1132 logo and dark / amber palette already shipping in `icons/icon128.png` and `popup.css`. Do not invent a new visual identity.
+- Use the wordmark **"1132 FIXER"**.
+- Allowed taglines (pick one): "Fix Zoom 1132. One click." / "Clear Zoom site data, fast." / "1132? Cleared." Do **not** use Zoom's logo, wordmark, or product art — that risks trademark issues and store rejection.
+- Do **not** describe the extension as "official Zoom" anything. It is unaffiliated with Zoom Video Communications, Inc.
+- Do **not** show fake screenshots, fabricated UI states, or features the extension does not have.
 
 ### Screenshots checklist
 
-Capture at 1280×800 (preferred) or 640×400. Suggested filenames make it obvious which row of the manual test produced each shot:
+Capture at 1280×800 (preferred) or 640×400. Filenames are stable so the manual proof walk maps 1-to-1 onto each row.
 
-| # | Subject                                                              | Required? | Target filename                                  | Status   |
-| - | -------------------------------------------------------------------- | --------- | ------------------------------------------------ | -------- |
-| 1 | Popup open on `https://zoom.us` showing **ZOOM DETECTED** banner     | yes       | `store-assets/screenshot-1-zoom-detected.png`    | **TODO** |
-| 2 | Popup right after a successful **FIX ZOOM** (status badge `ZOOM CLEARED`, log entries visible) | yes | `store-assets/screenshot-2-zoom-cleared.png` | **TODO** |
-| 3 | Popup open on a non-Zoom site (e.g. `https://example.com`) — Zoom banner absent, scope picker visible | yes | `store-assets/screenshot-3-non-zoom.png` | **TODO** |
-| 4 | Popup with **Custom domain** picked and a domain typed, ready for **FIX NOW** | yes | `store-assets/screenshot-4-custom-domain.png`    | **TODO** |
-| 5 | `chrome://extensions` details page showing minimal permissions (`cookies`, `browsingData`, `activeTab`, `scripting`, host access) | optional but persuasive | `store-assets/screenshot-5-permissions.png` | **TODO** |
+| # | Target filename                                          | Subject                                                                                                       | What it must prove                                                                                  | Required?               | Status   |
+| - | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------- | -------- |
+| 1 | `store-assets/01-zoom-detected.png`                      | Popup open on `https://zoom.us` with **ZOOM DETECTED** banner visible.                                        | Banner shows the real host, **FIX ZOOM** button is rendered, status badge says `READY · zoom.us`.   | **yes**                 | **TODO** |
+| 2 | `store-assets/02-fix-complete.png`                       | Popup taken immediately after a successful **FIX ZOOM** click, before the Zoom tab reload finishes.           | Status badge reads `ZOOM CLEARED`, log shows `-- zoom.us --` / `-- zoom.com --` and `Zoom data cleared`. | **yes**                 | **TODO** |
+| 3 | `store-assets/03-non-zoom-safe.png`                      | Popup on a clearly non-Zoom site such as `https://example.com`.                                               | **No** ZOOM DETECTED banner. Scope picker is visible (default **Current site** chip selected).      | **yes**                 | **TODO** |
+| 4 | `store-assets/04-extension-details-permissions.png`      | `chrome://extensions` → **Details** page for 1132 Fixer.                                                      | Lists exactly the four permissions (`cookies`, `browsingData`, `activeTab`, `scripting`) and the host access line. Site access is set to "On all sites" because of the **All sites** scope. | recommended (persuasive) | **TODO** |
+| 5 | `store-assets/05-manual-picker.png`                      | Popup with **Custom domain** selected and a domain typed in the input, ready to click **FIX NOW**.            | Demonstrates the manual flow is intentional and separate from FIX ZOOM.                             | **yes**                 | **TODO** |
+
+Notes:
+
+- Do **not** edit, blur, or stage these screenshots in a way that hides real UI state (status badge text, version chip, log lines, permission list).
+- Do **not** capture or include screenshots that show real Zoom meeting content, account email, or any other personal information. The popup itself shows only the host and counters — keep it that way.
+- The extension popup is 420 px wide; capture either at native size or scale the OS window so the popup remains the dominant element.
 
 ## Manual test checklist before submitting
 
@@ -117,7 +154,7 @@ Run every row of the **Manual test checklist** in [README.md](README.md). Captur
 
 ## Package zip — verified contents
 
-Running the packaging command above produces a 113 KB zip with exactly these entries (no `.git`, no `scripts/`, no `STORE_PREP.md`, no `.gitignore`, no `store-assets/`):
+Running the packaging command above produces an 11-entry zip. **Verified locally** — see the "Tests / checks run" section of the most recent task report for the exact byte count and entry list. The shape is:
 
 ```
 icons/icon.png         (source 144×144 — safe to ship as the brand asset)
@@ -130,6 +167,7 @@ popup.css
 popup.js
 LICENSE
 README.md
+PRIVACY_POLICY.md
 ```
 
 `manifest.json` is at the top level of the zip (Chrome Web Store requirement).
@@ -147,6 +185,77 @@ node scripts/validate-extension.js
 ```
 
 Must exit 0. If any check fails, fix and re-run before zipping.
+
+## Copy-paste-ready Chrome Web Store form
+
+Use the values below verbatim when filling out the Web Store dev console. Anything in **`«angle braces»`** must be supplied by the operator before submission.
+
+### Store listing tab
+
+```text
+Name:               1132 Fixer
+Summary (≤132):     One-click Zoom 1132 cleaner: clears Zoom cookies, storage, and cache, then reloads.
+Category:           Productivity
+Language:           English (United States)
+Detailed description:
+    «paste the "Long description (paste into store form ..." block from this file»
+Icon (128×128):     icons/icon128.png
+Small promo tile:   store-assets/promo-440x280.png
+Marquee promo:      store-assets/promo-1400x560.png  (optional)
+Screenshots:        store-assets/01-zoom-detected.png
+                    store-assets/02-fix-complete.png
+                    store-assets/03-non-zoom-safe.png
+                    store-assets/04-extension-details-permissions.png
+                    store-assets/05-manual-picker.png
+Official URL:       https://github.com/PrimeUpYourLife/1132-Fixer-Chrome
+Homepage URL:       https://github.com/PrimeUpYourLife/1132-Fixer-Chrome
+Support URL:        «operator-hosted support page or GitHub issues URL»
+```
+
+### Privacy practices tab
+
+```text
+Single purpose:
+    1132 Fixer clears the user's own site data — cookies, localStorage,
+    sessionStorage, Cache API, and IndexedDB — for the active site, a chosen
+    domain, or all sites, with a dedicated one-click shortcut for zoom.us to
+    mitigate Zoom error 1132.
+
+Permission justifications:
+    cookies        → «paste the cookies row from Permission justifications above»
+    browsingData   → «paste the browsingData row»
+    activeTab      → «paste the activeTab row»
+    scripting      → «paste the scripting row»
+    Host «all_urls»→ «paste the host row»
+
+Privacy policy URL: «operator-hosted public URL of PRIVACY_POLICY.md»
+
+Data usage disclosures:
+    Personally identifiable information ... NOT collected
+    Health information ......................... NOT collected
+    Financial and payment information .......... NOT collected
+    Authentication information ................. NOT collected
+    Personal communications .................... NOT collected
+    Location ................................... NOT collected
+    Web history ................................ NOT collected
+    User activity .............................. NOT collected
+    Website content ............................ NOT collected
+
+Certifications:
+    [x] I do not sell or transfer user data to third parties outside the approved use cases.
+    [x] I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
+    [x] I do not use or transfer user data to determine creditworthiness or for lending purposes.
+
+Remote code use: No
+```
+
+### Distribution tab
+
+```text
+Visibility:       Public  (only after manual proof + operator approval)
+Geographic regions: All regions
+Pricing:          Free
+```
 
 ## Browser-executed validation status
 

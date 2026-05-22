@@ -299,8 +299,8 @@ Notes:                        v1.1.0 narrows host_permissions to https://*.zoom.
 | 128×128 store icon (24-bit PNG)        | Claude   | **DONE** — `store-assets/icon128-store.png` (128×128, Format24bppRgb).                                                                                       |
 | 4 store screenshots (1280×800)         | Claude   | **DONE** — `store-assets/01–04-*.png` (each 1280×800, Format24bppRgb). The former `05-manual-picker.png` is gone with the feature.                            |
 | Browser proof                          | Claude   | **DONE** — source 68/68 + Playwright headless popup proof + real-Chromium load-unpacked Details proof.                                                       |
-| Chrome Web Store re-upload             | operator | **REQUIRED** — host-permission narrowing and feature drop in v1.1.0 means the previously uploaded `1132-fixer-chrome.zip` is stale. Upload the rebuilt zip, replace all assets, refresh Privacy tab single purpose + permission justifications, then re-check "Why can't I submit?". |
-| Chrome Web Store submission            | operator | **BLOCKED** — requires Google Developer Dashboard login + 2FA. Claude harness cannot drive this flow. Submit only after the re-upload above.                  |
+| Chrome Web Store re-upload             | operator | **DONE** — v1.1.0 zip + zoom-only assets + Privacy tab updates uploaded via dashboard.                                                                       |
+| Chrome Web Store submission            | operator | **SUBMITTED FOR REVIEW** — 2026-05-22. Item id `fccnmckeeddpkhocebnbfnlapcjlljh`, publisher `High-Texas`. Dashboard confirmation: "Your extension was submitted for review." Next: monitor dashboard home page; staged-publish items expire 30 days after passing review if not published. |
 
 ## Submission step (requires separate approval)
 

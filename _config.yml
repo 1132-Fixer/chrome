@@ -1,8 +1,12 @@
 title: 1132 Fixer for Chrome
-description: One-click cookie and site-data cleaner with a ZOOM DETECTED → FIX ZOOM flow. MV3, no telemetry, no remote code.
-theme: jekyll-theme-minimal
+description: One-click cookie and site-data cleaner for Zoom error 1132. MV3, user-triggered, no telemetry, no remote code.
+
+# No theme — we ship our own _layouts/default.html and assets/site.css.
+# This keeps the rendered page free of any external GitHub Pages theme assets.
+
 include:
   - PRIVACY_POLICY.md
+
 exclude:
   - node_modules
   - store-assets
@@ -11,4 +15,8 @@ exclude:
   - STORE_PREP.md
   - 1132-fixer-chrome.zip
   - package.json
+  - package-lock.json
   - .gitignore
+  - LICENSE
+
+plugins: []

@@ -25,7 +25,7 @@ function Resize-WithCanvas {
     $newW = [int]($src.Width  * $scale)
     $newH = [int]($src.Height * $scale)
 
-    $canvas = New-Object System.Drawing.Bitmap $canvasW, $canvasH
+    $canvas = New-Object System.Drawing.Bitmap $canvasW, $canvasH, ([System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
     $g = [System.Drawing.Graphics]::FromImage($canvas)
     $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
     $g.PixelOffsetMode   = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality

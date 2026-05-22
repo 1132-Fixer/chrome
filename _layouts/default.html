@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+<meta name="description" content="{{ page.description | default: site.description }}">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#0a1020">
+
+<!-- Open Graph / link previews -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+<meta property="og:description" content="{{ page.description | default: site.description }}">
+<meta property="og:image" content="{{ '/icons/icon128.png' | relative_url }}">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" type="image/png" href="{{ '/icons/icon128.png' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+
+<header class="site-header" role="banner">
+  <div class="container header-row">
+    <a class="brand" href="{{ '/' | relative_url }}" aria-label="1132 Fixer home">
+      <img class="brand-logo" src="{{ '/icons/icon128.png' | relative_url }}" alt="" width="40" height="40">
+      <span class="brand-text">1132 <em>FIXER</em></span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <a href="{{ '/privacy.html' | relative_url }}">Privacy</a>
+      <a href="https://github.com/PrimeUpYourLife/1132-Fixer-Chrome" rel="noopener">Source</a>
+    </nav>
+  </div>
+  <div class="hazard-bar" aria-hidden="true"></div>
+</header>
+
+<main class="container content" role="main">
+  {% if page.hero_title %}
+  <section class="hero">
+    <h1 class="hero-title">{{ page.hero_title }}</h1>
+    {% if page.hero_subtitle %}<p class="hero-sub">{{ page.hero_subtitle }}</p>{% endif %}
+    <ul class="trust-badges" role="list">
+      <li><span class="dot dot-green"></span>No telemetry</li>
+      <li><span class="dot dot-green"></span>No remote code</li>
+      <li><span class="dot dot-green"></span>User-triggered only</li>
+      <li><span class="dot dot-blue"></span>Local browser clearing</li>
+    </ul>
+  </section>
+  {% endif %}
+
+  <article class="prose">
+    {{ content }}
+  </article>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="hazard-bar" aria-hidden="true"></div>
+  <div class="container footer-row">
+    <span class="muted">© 2026 1132 Fixer · MIT License</span>
+    <span class="muted">Independent project. Not affiliated with Zoom Video Communications, Inc.</span>
+    <span class="muted">
+      <a href="https://github.com/PrimeUpYourLife/1132-Fixer-Chrome" rel="noopener">GitHub</a> ·
+      <a href="{{ '/privacy.html' | relative_url }}">Privacy</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>

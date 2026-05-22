@@ -1,10 +1,11 @@
 ---
 layout: default
-title: Privacy Policy — 1132 Fixer for Chrome
+title: Privacy Policy
+description: Privacy policy for the 1132 Fixer Chrome extension. No data collection, no telemetry, no remote code, no external network calls.
+hero_title: Privacy Policy
+hero_sub: 1132 Fixer does not collect, transmit, sell, share, or store any personal data. Everything runs locally in your own browser, and only when you click.
 permalink: /privacy.html
 ---
-
-# Privacy Policy — 1132 Fixer for Chrome
 
 *Last updated: 2026-05-22.*
 

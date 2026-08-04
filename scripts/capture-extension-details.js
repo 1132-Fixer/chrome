@@ -15,8 +15,9 @@ const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
 
-const PLAYWRIGHT_PATH = path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright');
-const { chromium } = require(PLAYWRIGHT_PATH);
+const { requirePlaywright } = require('./lib/playwright');
+
+const { chromium } = requirePlaywright();
 
 const ROOT    = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'store-assets');

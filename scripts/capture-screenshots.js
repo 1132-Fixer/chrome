@@ -16,9 +16,13 @@
  * Chromium load-unpacked flow — captured separately by
  * scripts/capture-extension-details.js.
  *
- * As of v1.1.0 the popup is intentionally zoom-only. The former
- * 05-manual-picker shot was dropped along with the Custom domain / All sites
- * scope feature.
+ * As of v1.1.0 the popup is intentionally zoom-only, and as of v1.2.0 it clears
+ * cookies only and renders a single button. The former 05-manual-picker shot was
+ * dropped along with the Custom domain / All sites scope feature.
+ *
+ * The mocked cookie jar is deliberately EMPTY, so shot 02 shows the truthful
+ * "no Zoom cookies were left to remove" end state rather than a fabricated
+ * count. Capture a real-session shot yourself if the listing needs one.
  *
  * Resolves the globally-installed `playwright` so the repo does not gain a
  * node_modules dependency.
@@ -26,27 +30,28 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { pathToFileURL } = require('url');
+const { requirePlaywright } = require('./lib/playwright');
 
-const PLAYWRIGHT_PATH = path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright');
-const { chromium } = require(PLAYWRIGHT_PATH);
+const { chromium } = requirePlaywright();
 
 const ROOT       = path.resolve(__dirname, '..');
-const POPUP_URL  = 'file:///' + path.join(ROOT, 'popup.html').replace(/\\/g, '/');
+const POPUP_URL  = pathToFileURL(path.join(ROOT, 'popup.html')).href;
 const OUT_DIR    = path.join(ROOT, 'store-assets');
+const VERSION    = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8')).version;
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
 /**
- * Build the mocked-chrome script that the popup expects. The popup's init()
- * calls chrome.tabs.query, chrome.runtime.getManifest, and on click calls
- * chrome.cookies.* / chrome.browsingData.remove / chrome.scripting.executeScript
- * / chrome.tabs.reload. Mock everything as no-op success so the popup behaves
- * exactly as it would for a real user clicking FIX ZOOM.
+ * Build the mocked-chrome script the popup expects: init() calls
+ * chrome.tabs.query + chrome.runtime.getManifest, and a FIX ZOOM click calls
+ * chrome.cookies.getAll / chrome.cookies.remove / chrome.tabs.reload. Those are
+ * the only chrome.* APIs the cookies-only popup touches.
  */
 function chromeMock(activeUrl) {
   return `(() => {
     window.chrome = {
       runtime: {
-        getManifest: () => ({ name: '1132 Fixer for Chrome', version: '1.1.0', manifest_version: 3 }),
+        getManifest: () => ({ name: '1132 Fixer for Chrome', version: ${JSON.stringify(VERSION)}, manifest_version: 3 }),
       },
       tabs: {
         query: async () => [{ id: 1, url: ${JSON.stringify(activeUrl)} }],
@@ -55,12 +60,6 @@ function chromeMock(activeUrl) {
       cookies: {
         getAll: async () => [],
         remove: async () => ({}),
-      },
-      browsingData: {
-        remove: async () => {},
-      },
-      scripting: {
-        executeScript: async () => [{ result: true }],
       },
     };
   })();`;
@@ -96,13 +95,13 @@ async function shoot({ name, activeUrl, after }) {
 }
 
 (async () => {
-  // 01 — zoom.us active, popup shows ZOOM DETECTED banner
+  // 01 — zoom.us active: state pill shows the host, one FIX ZOOM button
   await shoot({
     name: '01-zoom-detected.png',
     activeUrl: 'https://zoom.us/',
   });
 
-  // 02 — same setup, click FIX ZOOM, wait for ZOOM CLEARED status
+  // 02 — same setup, click FIX ZOOM, wait for the CLEARED state
   await shoot({
     name: '02-fix-complete.png',
     activeUrl: 'https://zoom.us/',
@@ -115,7 +114,7 @@ async function shoot({ name, activeUrl, after }) {
     },
   });
 
-  // 03 — non-Zoom site, banner hidden, "Not a Zoom tab" card visible
+  // 03 — non-Zoom site: NOT ZOOM pill, no button, one explanatory line
   await shoot({
     name: '03-non-zoom-safe.png',
     activeUrl: 'https://example.com/',

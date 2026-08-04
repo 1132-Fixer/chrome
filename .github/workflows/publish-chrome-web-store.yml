@@ -1,0 +1,157 @@
+name: Publish to Chrome Web Store
+
+# Manual only, and never publishes by accident:
+#   mode=upload-draft (default) uploads the zip as a draft — nothing goes live.
+#   mode=upload-and-publish     also flips the item to public.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CWS_EXTENSION_ID    the Web Store item id for 1132 Fixer
+#   CWS_CLIENT_ID       OAuth client id  (Google Cloud, "Desktop app" client)
+#   CWS_CLIENT_SECRET   OAuth client secret
+#   CWS_REFRESH_TOKEN   refresh token minted for scope
+#                       https://www.googleapis.com/auth/chromewebstore
+# See STORE_PREP.md → "Release automation" for how to mint the refresh token.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'What to do with the upload'
+        type: choice
+        default: upload-draft
+        options:
+          - upload-draft
+          - upload-and-publish
+      confirm:
+        description: 'Type the item version you expect to ship (e.g. 1.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: chrome-web-store
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check secrets are present
+        env:
+          ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CLIENT: ${{ secrets.CWS_CLIENT_ID }}
+          SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          missing=""
+          [ -n "$ID" ]      || missing="$missing CWS_EXTENSION_ID"
+          [ -n "$CLIENT" ]  || missing="$missing CWS_CLIENT_ID"
+          [ -n "$SECRET" ]  || missing="$missing CWS_CLIENT_SECRET"
+          [ -n "$REFRESH" ] || missing="$missing CWS_REFRESH_TOKEN"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing — see STORE_PREP.md → Release automation"
+            exit 1
+          fi
+
+      - name: Confirm the version being shipped
+        run: |
+          ACTUAL="$(node scripts/bump-version.js --print)"
+          EXPECTED='${{ inputs.confirm }}'
+          echo "manifest version: $ACTUAL"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Refusing to ship: manifest says $ACTUAL, you confirmed $EXPECTED."
+            exit 1
+          fi
+
+      - name: Install Playwright + Chromium
+        run: |
+          npm install -g playwright@1.56.1
+          npx --yes playwright@1.56.1 install --with-deps chromium
+
+      - name: Full test gate
+        run: npm test
+
+      - name: Build store zip
+        id: pkg
+        run: |
+          node scripts/package-extension.js
+          VERSION="$(node scripts/bump-version.js --print)"
+          echo "zip=store-assets/1132-fixer-chrome-$VERSION.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to Chrome Web Store
+        env:
+          ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CLIENT: ${{ secrets.CWS_CLIENT_ID }}
+          SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH: ${{ secrets.CWS_REFRESH_TOKEN }}
+          ZIP: ${{ steps.pkg.outputs.zip }}
+        run: |
+          set -euo pipefail
+
+          TOKEN="$(curl -sS -X POST \
+            -d "client_id=$CLIENT" \
+            -d "client_secret=$SECRET" \
+            -d "refresh_token=$REFRESH" \
+            -d 'grant_type=refresh_token' \
+            https://oauth2.googleapis.com/token | jq -r '.access_token // empty')"
+          if [ -z "$TOKEN" ]; then
+            echo '::error::Could not exchange the refresh token for an access token.'
+            exit 1
+          fi
+
+          RESP="$(curl -sS -X PUT \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'x-goog-api-version: 2' \
+            -T "$ZIP" \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/$ID")"
+          echo "$RESP" | jq .
+
+          STATE="$(echo "$RESP" | jq -r '.uploadState // "UNKNOWN"')"
+          if [ "$STATE" != 'SUCCESS' ]; then
+            echo "::error::Upload finished in state $STATE"
+            exit 1
+          fi
+          echo "Uploaded as a draft. Nothing is public yet."
+
+      - name: Publish (only when explicitly requested)
+        if: inputs.mode == 'upload-and-publish'
+        env:
+          ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CLIENT: ${{ secrets.CWS_CLIENT_ID }}
+          SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          TOKEN="$(curl -sS -X POST \
+            -d "client_id=$CLIENT" \
+            -d "client_secret=$SECRET" \
+            -d "refresh_token=$REFRESH" \
+            -d 'grant_type=refresh_token' \
+            https://oauth2.googleapis.com/token | jq -r '.access_token // empty')"
+
+          RESP="$(curl -sS -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'x-goog-api-version: 2' \
+            -H 'Content-Length: 0' \
+            "https://www.googleapis.com/chromewebstore/v1.1/items/$ID/publish")"
+          echo "$RESP" | jq .
+
+          if echo "$RESP" | jq -e '.status[]? | select(. == "OK" or . == "ITEM_PENDING_REVIEW")' >/dev/null; then
+            echo 'Submitted. Review is in Google’s hands from here.'
+          else
+            echo '::error::Publish call did not return an OK / pending-review status.'
+            exit 1
+          fi
+
+      - name: Attach the zip to the run
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1132-fixer-chrome-zip
+          path: ${{ steps.pkg.outputs.zip }}
+          if-no-files-found: error

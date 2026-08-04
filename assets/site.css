@@ -209,4 +209,17 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-
   .content { padding: 28px 18px 60px; }
   .hero { padding: 22px 18px; border-radius: 12px; }
   .prose th, .prose td { padding: 8px 10px; font-size: 13px; }
+  /* Permission tables are wider than a phone; scroll them instead of the page. */
+  .prose table { display: block; overflow-x: auto; white-space: nowrap; }
+  .prose td, .prose th { white-space: normal; min-width: 8rem; }
+}
+
+/* ===== MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .cta-card a.btn:hover { transform: none; }
 }

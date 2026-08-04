@@ -1,3 +1,6 @@
+# SUPERSEDED by scripts/make-promo.js, which does the same job on any OS and is what
+# 'npm run assets' calls. Kept only for reference; prefer the Node script.
+
 # Generates store-assets/<OutName> using the 1132 dark/amber scheme.
 # Defaults: 440x280 small promo tile (Chrome Web Store requirement).
 # Override: -W 1400 -H 560 -OutName promo-1400x560.png for the marquee.

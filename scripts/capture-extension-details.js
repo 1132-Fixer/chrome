@@ -16,8 +16,13 @@ const path = require('path');
 const os   = require('os');
 
 const { requirePlaywright } = require('./lib/playwright');
+const { flattenPngFile } = require('./lib/png');
 
 const { chromium } = requirePlaywright();
+
+// How far down the Details page to scroll before shooting, so the Permissions
+// and Site access blocks are both fully on screen.
+const SCROLL_Y = Number(process.env.DETAILS_SCROLL_Y || 180);
 
 const ROOT    = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'store-assets');
@@ -29,7 +34,7 @@ const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), '1132-pw-profile-'));
   const context = await chromium.launchPersistentContext(profileDir, {
     headless: false,
     viewport: { width: 1280, height: 800 },
-    deviceScaleFactor: 2,
+    deviceScaleFactor: 1,
     args: [
       '--disable-extensions-except=' + ROOT,
       '--load-extension=' + ROOT,
@@ -69,9 +74,45 @@ const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), '1132-pw-profile-'));
     // Navigate to the per-extension Details page; permissions list lives there.
     await page.goto('chrome://extensions/?id=' + extensionId, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(800);
+
+    // The Site access block sits below the fold, and it is the part a reviewer
+    // needs to see — scroll until every host pattern is on screen. The details
+    // view scrolls its own container inside the manager's shadow DOM, so try
+    // that first and fall back to the window.
+    const scrolled = await page.evaluate((y) => {
+      // chrome://extensions scrolls a container nested in the manager's shadow
+      // DOM, so document.scrollingElement never moves. Walk every shadow root
+      // and drive the tallest genuinely scrollable element we find.
+      const candidates = [];
+      const walk = (root) => {
+        for (const el of root.querySelectorAll('*')) {
+          if (el.scrollHeight > el.clientHeight + 8 && el.clientHeight > 200) candidates.push(el);
+          if (el.shadowRoot) walk(el.shadowRoot);
+        }
+      };
+      walk(document);
+
+      candidates.sort((a, b) => b.clientHeight - a.clientHeight);
+      const target = candidates[0] || document.scrollingElement;
+      target.scrollTop = y;
+      if (!target.scrollTop) window.scrollTo(0, y);
+      return {
+        element: target.tagName ? target.tagName.toLowerCase() + (target.id ? '#' + target.id : '') : 'window',
+        scrollTop: target.scrollTop || window.scrollY,
+      };
+    }, SCROLL_Y);
+    console.log(`  scrolled ${scrolled.element} to ${scrolled.scrollTop}`);
+    await page.waitForTimeout(300);
+
     const out = path.join(OUT_DIR, '04-extension-details-permissions.png');
     await page.screenshot({ path: out, fullPage: false });
-    console.log('  wrote', path.relative(ROOT, out));
+
+    // The store wants exactly 1280x800 (or 640x400) with no alpha channel.
+    const { width, height } = flattenPngFile(fs, out, [255, 255, 255]);
+    if (width !== 1280 || height !== 800) {
+      throw new Error(`screenshot is ${width}x${height}, the store requires 1280x800`);
+    }
+    console.log(`  wrote ${path.relative(ROOT, out)} (${width}x${height}, 24-bit RGB, no alpha)`);
   } finally {
     await context.close();
     try { fs.rmSync(profileDir, { recursive: true, force: true }); } catch {}

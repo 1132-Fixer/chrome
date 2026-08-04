@@ -1,3 +1,6 @@
+# SUPERSEDED by scripts/letterbox-screenshots.js, which does the same job on any OS and is what
+# 'npm run assets' calls. Kept only for reference; prefer the Node script.
+
 # Letterbox the four popup-state screenshots from native popup size to the
 # Chrome Web Store-preferred 1280x800 canvas, on the 1132 dark background.
 # Preserves aspect ratio; centers the popup capture; never upscales beyond

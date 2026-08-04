@@ -1,3 +1,6 @@
+# SUPERSEDED by scripts/make-store-icon.js, which does the same job on any OS and is what
+# 'npm run assets' calls. Kept only for reference; prefer the Node script.
+
 # Generate a Chrome Web Store-friendly 128x128 store icon by compositing the
 # RGBA source onto an opaque dark canvas matching the 1132 popup scheme.
 # Web Store rejects icons with low-opacity edges as "image size is incorrect"

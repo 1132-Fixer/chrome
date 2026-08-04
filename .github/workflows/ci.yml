@@ -14,11 +14,11 @@ jobs:
     name: Validate + e2e
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
 
       # The extension ships zero dependencies, so Playwright is installed
       # globally here rather than added to the repo as a devDependency.

@@ -98,7 +98,7 @@ $rulePen.Dispose()
 $subColor = [System.Drawing.Color]::FromArgb(255, 207, 230, 255)
 $subFont  = New-Object System.Drawing.Font 'Segoe UI', ([float](14 * $scale)), ([System.Drawing.FontStyle]::Regular)
 $subBrush = New-Object System.Drawing.SolidBrush $subColor
-$g.DrawString('Fix Zoom site data in one click.', $subFont, $subBrush, (S 144), (S 148))
+$g.DrawString('Fix Zoom cookies in one click.', $subFont, $subBrush, (S 144), (S 148))
 $subFont.Dispose()
 $subBrush.Dispose()
 
@@ -106,7 +106,7 @@ $subBrush.Dispose()
 $discColor = [System.Drawing.Color]::FromArgb(255, 140, 164, 192)
 $discFont  = New-Object System.Drawing.Font 'Segoe UI', ([float](9 * $scale))
 $discBrush = New-Object System.Drawing.SolidBrush $discColor
-$g.DrawString('Cookies. Storage. Cache. IndexedDB. Reload.', $discFont, $discBrush, (S 144), (S 184))
+$g.DrawString('One button. Zoom cookies only. Reload.', $discFont, $discBrush, (S 144), (S 184))
 $g.DrawString('Independent project. Not affiliated with Zoom.', $discFont, $discBrush, (S 144), (S 200))
 $discFont.Dispose()
 $discBrush.Dispose()

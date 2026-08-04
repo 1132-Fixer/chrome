@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "1132 Fixer for Chrome",
   "short_name": "1132 Fixer",
-  "version": "1.1.0",
-  "description": "One-click Zoom site-data cleaner. Clears Zoom cookies, storage, cache, and IndexedDB, then reloads the active Zoom tab.",
+  "version": "1.2.0",
+  "description": "One-click Zoom cookie cleaner. Clears zoom.us and zoom.com cookies, then reloads the active Zoom tab.",
   "author": "Justyn Gunnels",
   "minimum_chrome_version": "114",
   "icons": {
@@ -22,12 +22,12 @@
   },
   "permissions": [
     "cookies",
-    "browsingData",
-    "activeTab",
-    "scripting"
+    "activeTab"
   ],
   "host_permissions": [
     "https://*.zoom.us/*",
-    "https://*.zoom.com/*"
+    "https://*.zoom.com/*",
+    "http://*.zoom.us/*",
+    "http://*.zoom.com/*"
   ]
 }

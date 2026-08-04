@@ -58,10 +58,14 @@ jobs:
             exit 1
           fi
 
+      # The confirmation string reaches the shell through the environment, never
+      # through ${{ }} interpolation — a dispatcher must not be able to inject
+      # shell into a job that later handles the store credentials.
       - name: Confirm the version being shipped
+        env:
+          EXPECTED: ${{ inputs.confirm }}
         run: |
           ACTUAL="$(node scripts/bump-version.js --print)"
-          EXPECTED='${{ inputs.confirm }}'
           echo "manifest version: $ACTUAL"
           if [ "$ACTUAL" != "$EXPECTED" ]; then
             echo "::error::Refusing to ship: manifest says $ACTUAL, you confirmed $EXPECTED."

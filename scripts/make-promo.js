@@ -202,7 +202,7 @@ async function paint({ width, height, iconDataUri, copy }) {
     });
 
     const decoded = decodePng(Buffer.from(dataUrl.split(',')[1], 'base64'));
-    fs.writeFileSync(OUT, encodeRgbPng(decoded.width, decoded.height, toRgb(decoded, [5, 10, 20])));
+    fs.writeFileSync(OUT, encodeRgbPng(decoded.width, decoded.height, toRgb(decoded, [10, 16, 32])));
     console.log(`wrote ${path.relative(ROOT, OUT)} (${decoded.width}x${decoded.height}, 24-bit RGB, no alpha)`);
   } finally {
     await browser.close();

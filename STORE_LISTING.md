@@ -187,9 +187,9 @@ https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
 
 ---
 
-## The one thing this file cannot fill in
+## Privacy policy contact
 
-`PRIVACY_POLICY.md` still ends with a placeholder contact block, and that policy is the URL you are submitting. Replace the **Contact** section with a real, public point of contact — a support email you are willing to publish, or the repository issues page if you would rather not publish an address. The rest of that document already matches v1.2.0 behaviour.
+`PRIVACY_POLICY.md` now names the repository issues page as the canonical public contact point, so no field is left as a placeholder. If you would rather publish a support email, swap it into the **Contact** section before submitting — the rest of that document already matches v1.2.0 behaviour.
 
 ## Before you submit
 

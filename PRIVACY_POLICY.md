@@ -74,12 +74,10 @@ If extension behavior changes in a way that affects this policy, this document w
 
 ## Contact
 
-> **TODO (operator):** Replace this section with a real public point of contact before submitting to the Chrome Web Store. Suggested fields:
->
-> - **Owner:** `1132 Fixer` — published by *(operator/legal name)*.
-> - **Support email:** *(operator email; do not invent one)*.
-> - **Repository:** <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
-> - **Hosted privacy URL:** <https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html>.
+- **Owner:** `1132 Fixer` — published by PrimeUpYourLife.
+- **Support / privacy questions:** open an issue at <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues> — this is the canonical public contact point for this extension.
+- **Repository:** <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
+- **Hosted privacy URL:** <https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html>.
 
 ## Verifiability
 

@@ -29,7 +29,9 @@ const LIMITS = [
   { heading: 'Permission justification — host permissions', limit: 1000 },
 ];
 
-const markdown = fs.readFileSync(FILE, 'utf8');
+// Normalize CRLF so a Windows checkout (core.autocrlf) parses and counts
+// identically to the LF blob the store dashboard ultimately receives.
+const markdown = fs.readFileSync(FILE, 'utf8').replace(/\r\n/g, '\n');
 const sections = markdown.split(/^### /m).slice(1);
 
 let failed = 0;

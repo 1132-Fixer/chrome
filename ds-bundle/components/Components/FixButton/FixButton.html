@@ -1,0 +1,11 @@
+<!-- @dsCard group="Components" -->
+<style>
+  :root { --blue-300:#4aa3ff; --blue-400:#2d8cff; --blue-600:#1a6fb5; --amber-400:#f5a623; }
+  body { margin:0; padding:28px; display:flex; flex-direction:column; gap:16px; font-family:'Segoe UI',sans-serif; background:linear-gradient(170deg,#0a1020,#081018 45%,#050a14); }
+  .btn-zoom { width:100%; padding:17px 24px; border-radius:30px; border:2px solid rgba(255,255,255,0.18); cursor:pointer; background:linear-gradient(145deg,var(--blue-300),var(--blue-400),var(--blue-600)); color:#fff; font-family:inherit; font-size:15px; font-weight:900; letter-spacing:3.5px; box-shadow:0 0 30px rgba(45,140,255,0.32),0 4px 16px rgba(0,0,0,0.4); transition:transform .2s,box-shadow .2s,opacity .2s; }
+  .btn-zoom:hover:not(:disabled) { transform:translateY(-1px) scale(1.02); box-shadow:0 0 46px rgba(45,140,255,0.5),0 6px 22px rgba(0,0,0,0.5); }
+  .btn-zoom:focus-visible { outline:3px solid var(--amber-400); outline-offset:3px; }
+  .btn-zoom:disabled { opacity:0.45; cursor:progress; }
+</style>
+<button class="btn-zoom" type="button">FIX ZOOM</button>
+<button class="btn-zoom" type="button" disabled>FIX ZOOM</button>

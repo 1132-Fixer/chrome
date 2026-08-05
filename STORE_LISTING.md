@@ -1,0 +1,201 @@
+# Chrome Web Store — listing copy, ready to paste
+
+Everything below is the finished text for the developer dashboard, matching the shipped **v1.2.0** manifest (`cookies` + `activeTab`, four Zoom host patterns, cookies-only clear).
+
+Two notes before you start:
+
+- **These fields cannot be automated.** The Chrome Web Store API only uploads a package and publishes an item; listing copy, permission justifications and privacy answers exist solely in the dashboard UI. This file is the paste source.
+- **Every field is plain text.** The dashboard does not render Markdown, so paste the blocks exactly as they appear — the line breaks and blank lines are the formatting.
+
+Dashboard: <https://chrome.google.com/webstore/devconsole>
+
+---
+
+## Tab: Store listing
+
+### Name
+
+```text
+1132 Fixer for Chrome
+```
+
+### Summary
+
+The store pre-fills this from the manifest description; replace it with this so the wording matches the listing body.
+
+```text
+One-click Zoom cookie cleaner. Deletes zoom.us and zoom.com cookies, then reloads the tab, to clear Zoom error 1132.
+```
+
+### Detailed description
+
+```text
+Zoom error 1132 usually means a stale cookie, not a broken account. 1132 Fixer deletes your Zoom cookies and reloads the tab so you can sign in again. One button, nothing to configure.
+
+HOW IT WORKS
+
+Open zoom.us or zoom.com (any subdomain works) and click the 1132 Fixer icon. The popup shows the host it detected and a single FIX ZOOM button. Click it and the extension deletes every cookie Chrome holds for zoom.us and zoom.com, reloads the active Zoom tab, and tells you how many cookies it removed. That is the whole interface.
+
+On any other site, including chrome:// pages, the popup shows one line asking you to open a Zoom tab. No button appears, because there is nothing for it to do.
+
+COOKIES ONLY
+
+This extension clears cookies. That is all it clears.
+
+It does not touch localStorage or sessionStorage, the Cache API, IndexedDB, service worker registrations, or Chrome's global HTTP cache, for Zoom or for anyone else. Your Zoom preferences and cached assets survive the clear, and no other site's data is affected. The permissions that would allow that kind of clearing were removed from the extension in version 1.2.0.
+
+WHAT IT DOES NOT DO
+
+- No data collection. No analytics. No telemetry.
+- No network requests of any kind. The extension never contacts any server, including ours.
+- No remote code. Every script ships inside the package; nothing is fetched or evaluated at runtime.
+- No reading of your cookies. The extension deletes them and reports a count. Cookie names and values are never read into the interface, logged, or transmitted.
+- No automatic clearing. Opening the popup deletes nothing. Nothing runs on install, on startup, on page load, or on a timer.
+- No access to non-Zoom sites. Chrome enforces this, not just our code.
+- No account, no sign-in, no identifier.
+
+PERMISSIONS, IN PLAIN ENGLISH
+
+- cookies: list and delete cookies for zoom.us and zoom.com.
+- activeTab: read the active tab's address so the popup knows whether you are on Zoom, and reload that tab after a clear.
+- Host access: zoom.us and zoom.com only, over both https and http. Both schemes are needed because Chrome hides a non-Secure cookie from an extension that only asks for https, which would leave stale cookies behind.
+
+GOOD TO KNOW
+
+- The clear covers subdomains such as us02web.zoom.us, and covers partitioned (CHIPS) cookies where your Chrome version supports it.
+- Cookies are cleared for the Chrome profile you are using. An Incognito window keeps a separate cookie jar.
+- You will be signed out of Zoom in the browser. That is the point: the next sign-in starts clean.
+- If a 1132 loop survives a cookie clear, the cause is elsewhere, and Chrome's own Settings > Privacy and security > Delete browsing data covers the heavier options.
+
+OPEN SOURCE
+
+MIT licensed, and the source is public: https://github.com/PrimeUpYourLife/1132-Fixer-Chrome
+
+The repository ships its own checks, including a validator that fails the build if a broader permission or a non-cookie clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
+
+Chrome sibling of 1132 Fixer for Windows: https://github.com/PrimeUpYourLife/1132-Fixer-Windows
+
+Independent project. Not affiliated with, endorsed by, or sponsored by Zoom Video Communications, Inc. "Zoom" is their trademark, used here only to say which site this extension works on.
+```
+
+### Category and language
+
+| Field    | Value                   |
+| -------- | ----------------------- |
+| Category | Productivity            |
+| Language | English (United States) |
+
+### Graphic assets
+
+Build them with `npm run assets` and `npm run assets:details`, then upload from `store-assets/`:
+
+| Slot                            | File                                             |
+| ------------------------------- | ------------------------------------------------ |
+| Store icon (128×128)            | `store-assets/icon128-store.png`                 |
+| Screenshot 1                    | `store-assets/01-zoom-detected.png`              |
+| Screenshot 2                    | `store-assets/02-fix-complete.png`               |
+| Screenshot 3                    | `store-assets/03-non-zoom-safe.png`              |
+| Screenshot 4                    | `store-assets/04-extension-details-permissions.png` |
+| Small promo tile (440×280)      | `store-assets/promo-440x280.png`                 |
+| Marquee promo tile (1400×560)   | `store-assets/promo-1400x560.png`                |
+
+`npm run assets:verify` confirms all seven are the exact required size and carry no alpha channel before you upload.
+
+### Additional fields
+
+| Field           | Value                                                              |
+| --------------- | ------------------------------------------------------------------ |
+| Official URL    | None — leave unset until a domain is Search-Console-verified        |
+| Homepage URL    | `https://github.com/PrimeUpYourLife/1132-Fixer-Chrome`             |
+| Support URL     | `https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues`      |
+| Mature content  | No                                                                 |
+| Item support    | On                                                                 |
+
+---
+
+## Tab: Privacy practices
+
+### Single purpose
+
+```text
+1132 Fixer deletes cookies for zoom.us and zoom.com, including their subdomains, and then reloads the active Zoom tab. It exists to clear Zoom error 1132 and similar stale-cookie sign-in loops, where a Zoom session gets stuck because an old cookie is still present. Cookies are the only type of data the extension touches, and Zoom domains are the only sites it can reach.
+```
+
+### Permission justification — `cookies`
+
+```text
+The extension deletes cookies, so it needs the cookies permission to do its single job. It calls chrome.cookies.getAll to list the cookies stored for zoom.us and zoom.com and their subdomains, then chrome.cookies.remove to delete each one. Cookie values are never read, copied, logged, or transmitted anywhere: removal only needs a cookie name, domain, path and partition key. The popup reports a count, for example "Removed 17 Zoom cookies.", and never a cookie name or value. Nothing is deleted until the user clicks FIX ZOOM.
+```
+
+### Permission justification — `activeTab`
+
+```text
+The popup reads the active tab's URL when it opens, so it can tell whether the user is on a Zoom domain. On a Zoom tab it shows a FIX ZOOM button; anywhere else it shows no button at all, which prevents the user from clearing cookies from a page where that would be surprising. After a clear completes, the extension calls chrome.tabs.reload on that same tab so the signed-out state takes effect immediately. No content script is injected at install or page-load time, and page content is never read.
+```
+
+### Permission justification — host permissions
+
+Covers all four patterns: `https://*.zoom.us/*`, `https://*.zoom.com/*`, `http://*.zoom.us/*`, `http://*.zoom.com/*`.
+
+```text
+Chrome only exposes a cookie to an extension that holds host permission for the URL the cookie belongs to, so chrome.cookies cannot see or delete Zoom cookies without these patterns. Both schemes are requested because Chrome maps a non-Secure cookie to an http:// URL: with https-only patterns, stale non-Secure Zoom cookies stay invisible and the clear silently misses them. Access is limited to zoom.us and zoom.com; no other host is requested, and the extension cannot read or change data on any other site. No content scripts are injected and no page content is read.
+```
+
+> **If the form still shows `browsingData` or `scripting` justification fields** from the v1.1.0 submission, clear them. v1.2.0 does not request either permission, and a justification for a permission the manifest no longer holds is a review flag.
+
+### Remote code
+
+Select **No, I am not using remote code.** Every script and style ships inside the package; the extension makes no network requests and uses no `eval` or `new Function`.
+
+### Data usage — leave all nine boxes unchecked
+
+| Disclosure                         | Answer        |
+| ---------------------------------- | ------------- |
+| Personally identifiable information | Not collected |
+| Health information                 | Not collected |
+| Financial and payment information  | Not collected |
+| Authentication information         | Not collected — cookies are deleted, never read |
+| Personal communications            | Not collected |
+| Location                           | Not collected |
+| Web history                        | Not collected |
+| User activity                      | Not collected |
+| Website content                    | Not collected — no content scripts, no page reads |
+
+Then tick *I do not collect or transmit user data*.
+
+### Certifications — tick all three
+
+- I do not sell or transfer user data to third parties outside the approved use cases.
+- I do not use or transfer user data for purposes unrelated to my item's single purpose.
+- I do not use or transfer user data to determine creditworthiness or for lending purposes.
+
+### Privacy policy URL
+
+```text
+https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
+```
+
+---
+
+## Tab: Distribution
+
+| Field              | Value                                              |
+| ------------------ | -------------------------------------------------- |
+| Visibility         | Public — only after the manual walk and your approval |
+| Geographic regions | All regions                                        |
+| Pricing            | Free                                               |
+
+---
+
+## The one thing this file cannot fill in
+
+`PRIVACY_POLICY.md` still ends with a placeholder contact block, and that policy is the URL you are submitting. Replace the **Contact** section with a real, public point of contact — a support email you are willing to publish, or the repository issues page if you would rather not publish an address. The rest of that document already matches v1.2.0 behaviour.
+
+## Before you submit
+
+1. `npm test` — validator and e2e suites both green.
+2. `npm run assets && npm run assets:verify` — all seven graphics conform.
+3. `npm run package` — builds `store-assets/1132-fixer-chrome-1.2.0.zip`.
+4. Walk the manual checklist in [README.md](README.md), on a signed-in Zoom session. Rows 6 and 7 (signed out after the clear, preferences survive) are the two that only a real session can prove.
+5. Optionally retake screenshot 2 during that walk, so it shows a real cookie count instead of the "No Zoom cookies were left to remove." state the mocked capture produces.
+6. Upload: **Actions → Publish to Chrome Web Store**, `mode=upload-draft`. Review the draft in the dashboard, then re-run with `upload-and-publish` when you are satisfied.

@@ -1,0 +1,21 @@
+<!-- @dsCard group="Components" -->
+<style>
+  :root { --amber-400:#f5a623; --green-500:#22c55e; --red-500:#ef4444; --text-dim:#8ca4c0; --radius-pill:50px; }
+  body { margin:0; padding:24px; display:flex; flex-direction:column; gap:12px; align-items:flex-start; font-family:'Segoe UI',sans-serif; background:linear-gradient(170deg,#0a1020,#081018 45%,#050a14); }
+  .status-badge { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:var(--radius-pill); color:var(--green-500); font-size:10.5px; font-weight:800; letter-spacing:1.4px; border:1.5px solid rgba(34,197,94,0.5); background:linear-gradient(145deg,rgba(34,197,94,0.15),rgba(34,197,94,0.06)); }
+  .status-dot { width:8px; height:8px; border-radius:50%; background:var(--green-500); box-shadow:0 0 6px var(--green-500); animation:dotPulse 2s ease-in-out infinite; }
+  @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+  .status-badge.scanning { color:var(--amber-400); border-color:rgba(245,166,35,0.5); background:linear-gradient(145deg,rgba(245,166,35,0.15),rgba(245,166,35,0.06)); }
+  .status-badge.scanning .status-dot { background:var(--amber-400); box-shadow:0 0 6px var(--amber-400); animation:dotBlink 0.8s ease-in-out infinite; }
+  .status-badge.done .status-dot { animation:none; }
+  .status-badge.neutral { color:var(--text-dim); border-color:rgba(255,255,255,0.14); background:linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03)); }
+  .status-badge.neutral .status-dot { background:var(--text-dim); box-shadow:none; animation:none; }
+  .status-badge.error { color:var(--red-500); border-color:rgba(239,68,68,0.5); background:linear-gradient(145deg,rgba(239,68,68,0.15),rgba(239,68,68,0.06)); }
+  .status-badge.error .status-dot { background:var(--red-500); box-shadow:0 0 6px var(--red-500); animation:none; }
+</style>
+<span class="status-badge"><span class="status-dot"></span>READY · zoom.us</span>
+<span class="status-badge scanning"><span class="status-dot"></span>WORKING</span>
+<span class="status-badge done"><span class="status-dot"></span>CLEARED</span>
+<span class="status-badge error"><span class="status-dot"></span>ERROR</span>
+<span class="status-badge neutral"><span class="status-dot"></span>NOT ZOOM</span>

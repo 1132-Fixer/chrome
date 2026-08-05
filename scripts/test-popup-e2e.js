@@ -50,7 +50,9 @@ function mockScript(cfg) {
   };
   const partitionMatches = (c, details) => {
     if (details.partitionKey) {
-      if (CFG.partitionQueryReturnsAll) return true;
+      // Real Chrome: an empty partitionKey returns cookies from every
+      // partition PLUS the unpartitioned jar.
+      if (details.partitionKey.topLevelSite === undefined) return true;
       return !!c.partitionKey && c.partitionKey.topLevelSite === details.partitionKey.topLevelSite;
     }
     return !c.partitionKey;
@@ -196,7 +198,7 @@ const ZOOM_JAR = [
   });
 
   // --- 2. Partitioned (CHIPS) cookies ------------------------------------
-  group('partitioned cookies');
+  group('partitioned cookies (own-site AND third-party partitions)');
   await withPopup({
     name: 'partitioned',
     activeUrl: 'https://zoom.us/',
@@ -205,25 +207,27 @@ const ZOOM_JAR = [
     jar: [
       { name: '_zm_ssid', domain: 'zoom.us', secure: true },
       { name: '_zm_chtaid', domain: 'zoom.us', secure: true, partitionKey: { topLevelSite: 'https://zoom.us' } },
+      // Zoom embedded in a third-party page: partitioned under THAT site.
+      { name: '_zm_embed', domain: 'zoom.us', secure: true, partitionKey: { topLevelSite: 'https://school-lms.example' } },
     ],
   }, async (page) => {
     await clickFix(page);
     const s = await readState(page);
-    check(s.calls.remove.length === 2,  'both partitioned and unpartitioned cookies removed', `${s.calls.remove.length}`);
+    check(s.calls.remove.length === 3,  'unpartitioned + both partitioned cookies removed', `${s.calls.remove.length}`);
     const withKey = s.calls.remove.filter(r => r.partitionKey);
-    check(withKey.length === 1 && withKey[0].partitionKey.topLevelSite === 'https://zoom.us',
-      'partitionKey is passed back to cookies.remove', JSON.stringify(withKey));
-    check(s.jarLeft === 0,              'partitioned cookie actually deleted', `${s.jarLeft} left`);
+    check(withKey.length === 2, 'partitionKey is passed back to cookies.remove for each partitioned cookie', JSON.stringify(withKey));
+    check(withKey.some(r => r.partitionKey.topLevelSite === 'https://school-lms.example'),
+      'a cookie partitioned under a third-party top-level site is cleared too', JSON.stringify(withKey));
+    check(s.jarLeft === 0,              'every partitioned cookie actually deleted', `${s.jarLeft} left`);
   });
 
-  // --- 3. Duplicate query results are deduplicated ----------------------
+  // --- 3. Query results are deduplicated ---------------------------------
   group('duplicate query results');
   await withPopup({
     name: 'dedupe',
     activeUrl: 'https://zoom.us/',
     version: '1.2.0',
     partitionSupport: true,
-    partitionQueryReturnsAll: true,
     jar: [
       { name: '_zm_ssid', domain: 'zoom.us', secure: true },
       { name: 'cred',     domain: 'zoom.us', secure: true },
@@ -231,7 +235,7 @@ const ZOOM_JAR = [
   }, async (page) => {
     await clickFix(page);
     const s = await readState(page);
-    check(s.calls.remove.length === 2, 'a cookie returned by two queries is removed once', `${s.calls.remove.length} remove calls`);
+    check(s.calls.remove.length === 2, 'each cookie is removed exactly once', `${s.calls.remove.length} remove calls`);
     check(/Removed 2 Zoom cookies\./.test(s.result), 'count is not double-reported', s.result);
   });
 

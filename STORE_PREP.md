@@ -228,6 +228,8 @@ Both must exit 0. If any check fails, fix and re-run before zipping. CI (`.githu
 
 ## Copy-paste-ready Chrome Web Store form
 
+> **The finished, field-by-field copy now lives in [STORE_LISTING.md](STORE_LISTING.md)**, in dashboard tab order, with `npm run listing:verify` checking every field against the store's character limits. The summary below is kept as a quick reference; STORE_LISTING.md is what you paste from.
+
 Use the values below verbatim when filling out the Web Store dev console. Anything in **`«angle braces»`** must be supplied by the operator before submission.
 
 ### Store listing tab

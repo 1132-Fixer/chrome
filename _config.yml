@@ -11,6 +11,8 @@ exclude:
   - node_modules
   - store-assets
   - scripts
+  - ds-bundle
+  - .design-sync
   - .github
   - install.bat
   - STORE_PREP.md

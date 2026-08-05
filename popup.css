@@ -2,28 +2,48 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ===== BRAND TOKENS =====
+   Canonical 1132 Fixer palette. The Claude Design project
+   ("1132 Fixer Design System") mirrors these names — change them here first. */
 :root {
-  --bg-top: #0a1020;
-  --bg-mid: #081018;
-  --bg-bot: #050a14;
-  --accent: #f5a623;
-  --accent-hot: #ff8c00;
-  --zoom-blue: #2d8cff;
-  --zoom-blue-hi: #4aa3ff;
-  --zoom-blue-lo: #1a6fb5;
-  --green: #22c55e;
-  --red: #ef4444;
+  /* Ink — the dark stage everything sits on */
+  --ink-900: #050a14;
+  --ink-800: #081018;
+  --ink-700: #0a1020;
+
+  /* Amber — the brand color (logo, accents, warnings) */
+  --amber-400: #f5a623;
+  --amber-500: #ff8c00;
+  --amber-glow: rgba(245, 166, 35, 0.55);
+
+  /* Action blue — the FIX ZOOM button only */
+  --blue-300: #4aa3ff;
+  --blue-400: #2d8cff;
+  --blue-600: #1a6fb5;
+
+  /* Semantic */
+  --green-500: #22c55e;
+  --red-500: #ef4444;
+
+  /* Text */
   --text: #f0f0f0;
   --text-dim: #8ca4c0;
+
+  /* Hazard stripe — the brand's signature motif */
   --hazard-yellow: #f5c518;
   --hazard-black: #1a1a1a;
+
+  /* Type + radius scale */
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-pill: 50px;
+  --radius-mark: 14px;
 }
 
 html, body { width: 360px; }
 
 body {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(170deg, var(--bg-top) 0%, var(--bg-mid) 45%, var(--bg-bot) 100%);
+  font-family: var(--font);
+  background: linear-gradient(170deg, var(--ink-700) 0%, var(--ink-800) 45%, var(--ink-900) 100%);
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -53,7 +73,7 @@ body::before {
 .logo-mark {
   width: 56px;
   height: 56px;
-  border-radius: 14px;
+  border-radius: var(--radius-mark);
   filter: drop-shadow(0 8px 26px rgba(0,0,0,0.75));
 }
 .logo-title {
@@ -61,18 +81,18 @@ body::before {
   font-weight: 900;
   letter-spacing: 3px;
   line-height: 1;
-  background: linear-gradient(180deg, #ffe066, #ffd700, var(--accent));
+  background: linear-gradient(180deg, #ffe066, #ffd700, var(--amber-400));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 2px 8px rgba(245,166,35,0.55));
+  filter: drop-shadow(0 2px 8px var(--amber-glow));
 }
 .logo-sep {
   width: 46px;
   height: 3px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent-hot), var(--accent));
+  background: linear-gradient(90deg, var(--amber-500), var(--amber-400));
 }
 .logo-desc {
   color: var(--text-dim);
@@ -99,8 +119,8 @@ body::before {
   gap: 8px;
   max-width: 100%;
   padding: 6px 14px;
-  border-radius: 50px;
-  color: var(--green);
+  border-radius: var(--radius-pill);
+  color: var(--green-500);
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 1.4px;
@@ -115,21 +135,21 @@ body::before {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
+  background: var(--green-500);
+  box-shadow: 0 0 6px var(--green-500);
   animation: dotPulse 2s ease-in-out infinite;
 }
 @keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 @keyframes dotBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
 
 .status-badge.scanning {
-  color: var(--accent);
+  color: var(--amber-400);
   border-color: rgba(245, 166, 35, 0.5);
   background: linear-gradient(145deg, rgba(245, 166, 35, 0.15), rgba(245, 166, 35, 0.06));
 }
 .status-badge.scanning .status-dot {
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
+  background: var(--amber-400);
+  box-shadow: 0 0 6px var(--amber-400);
   animation: dotBlink 0.8s ease-in-out infinite;
 }
 .status-badge.done .status-dot { animation: none; }
@@ -146,13 +166,13 @@ body::before {
   animation: none;
 }
 .status-badge.error {
-  color: var(--red);
+  color: var(--red-500);
   border-color: rgba(239, 68, 68, 0.5);
   background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.06));
 }
 .status-badge.error .status-dot {
-  background: var(--red);
-  box-shadow: 0 0 6px var(--red);
+  background: var(--red-500);
+  box-shadow: 0 0 6px var(--red-500);
   animation: none;
 }
 
@@ -163,7 +183,7 @@ body::before {
   border-radius: 30px;
   border: 2px solid rgba(255,255,255,0.18);
   cursor: pointer;
-  background: linear-gradient(145deg, var(--zoom-blue-hi), var(--zoom-blue), var(--zoom-blue-lo));
+  background: linear-gradient(145deg, var(--blue-300), var(--blue-400), var(--blue-600));
   color: #ffffff;
   font: inherit;
   font-size: 15px;
@@ -179,7 +199,7 @@ body::before {
 }
 .btn-zoom:active:not(:disabled) { transform: scale(0.98); }
 .btn-zoom:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--amber-400);
   outline-offset: 3px;
 }
 .btn-zoom:disabled { opacity: 0.45; cursor: progress; }
@@ -193,9 +213,9 @@ body::before {
   text-align: center;
   text-wrap: pretty;
 }
-.result.good { color: var(--green); font-weight: 600; }
-.result.warn { color: var(--accent); font-weight: 600; }
-.result.bad  { color: var(--red);   font-weight: 600; }
+.result.good { color: var(--green-500); font-weight: 600; }
+.result.warn { color: var(--amber-400); font-weight: 600; }
+.result.bad  { color: var(--red-500);   font-weight: 600; }
 
 /* ===== FOOTER ===== */
 .footer { position: relative; z-index: 1; margin-top: auto; }
@@ -217,7 +237,7 @@ body::before {
   font-weight: 700;
   letter-spacing: 1.3px;
   padding: 5px 12px;
-  border-radius: 50px;
+  border-radius: var(--radius-pill);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .version-badge {
@@ -226,7 +246,7 @@ body::before {
   background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
 }
 .scope-badge {
-  color: var(--accent);
+  color: var(--amber-400);
   border: 1.5px solid rgba(245, 166, 35, 0.45);
   background: linear-gradient(145deg, rgba(245, 166, 35, 0.14), rgba(245, 166, 35, 0.05));
   text-transform: uppercase;

@@ -16,6 +16,7 @@
     "release": "npm test && npm run package",
     "assets": "node scripts/capture-screenshots.js && node scripts/letterbox-screenshots.js && node scripts/make-promo.js && node scripts/make-promo.js 1400 560 && node scripts/make-store-icon.js && npm run assets:verify",
     "assets:details": "node scripts/capture-extension-details.js",
-    "assets:verify": "node scripts/verify-store-assets.js"
+    "assets:verify": "node scripts/verify-store-assets.js",
+    "listing:verify": "node scripts/verify-store-listing.js"
   }
 }

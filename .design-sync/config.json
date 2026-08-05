@@ -1,0 +1,6 @@
+{
+  "projectId": "96e50bbe-ab8c-400a-a837-cc9004983b23",
+  "shape": "handauthored",
+  "note": "Repo is a 4-file vanilla MV3 extension, outside the converter envelope. Bundle in ds-bundle/ is hand-authored from popup.css brand tokens; no _ds_sync.json anchor by design (re-syncs re-verify everything).",
+  "readmeHeader": ".design-sync/conventions.md"
+}

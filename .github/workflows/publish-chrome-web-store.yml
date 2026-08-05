@@ -154,7 +154,7 @@ jobs:
           fi
 
       - name: Attach the zip to the run
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: 1132-fixer-chrome-zip
           path: ${{ steps.pkg.outputs.zip }}

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "1132 Fixer for Chrome",
   "short_name": "1132 Fixer",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "One-click Zoom cookie cleaner. Clears zoom.us and zoom.com cookies, then reloads the active Zoom tab.",
   "author": "Justyn Gunnels",
   "minimum_chrome_version": "114",

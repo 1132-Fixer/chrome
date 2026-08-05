@@ -1,0 +1,16 @@
+# Dependency updates (GOV-DEPENDABOT-SILENT-COMPLIANCE).
+# Ecosystems below were detected from files in this repository.
+# open-pull-requests-limit is bounded so enabling updates does not
+# flood the review queue.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5

@@ -1,13 +1,14 @@
 # LogoLockup
 
-The brand mark: gold-gradient wordmark, amber separator rule, dim uppercase descriptor. Always centered, always on the ink stage.
+Centered brand stack: transparent gear mark (`icons/popup-logo.png` in the real product — the preview uses a placeholder disc), white 600-weight wordmark, thin accent separator at 0.6 opacity, uppercase dim descriptor.
 
 ```html
 <div class="logo-lockup">
+  <img class="logo-mark" src="icons/popup-logo.png" alt="" width="64" height="64">
   <span class="logo-title">1132 FIXER</span>
   <div class="logo-sep"></div>
   <span class="logo-desc">Zoom Cookie Cleaner</span>
 </div>
 ```
 
-Rules: wordmark is UPPERCASE, weight 900, 3px tracking. The descriptor line names the product function, not a slogan. Never recolor the gradient; never place on white.
+Rules: the wordmark is plain `--text` — no gradients, no glow (the retired amber-gradient title must not return). Brand orange exists only inside the logo artwork itself. Mark renders at 64px from a 128px source (2× crisp).

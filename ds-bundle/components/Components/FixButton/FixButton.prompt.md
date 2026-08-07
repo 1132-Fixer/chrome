@@ -1,11 +1,9 @@
 # FixButton
 
-The primary — and only — action button. Blue is reserved for it; nothing else on a screen may be blue.
+The single primary action. Flat `--accent` fill, white 600-weight label, 8px radius, ≥48px tall, subtle shadow. Hover lightens (`--accent-hover`) with a 1px lift; press darkens (`--accent-down`).
 
 ```html
 <button class="btn-zoom" type="button">FIX ZOOM</button>
 ```
 
-States: default (glowing blue pill), `:hover` (lift + stronger glow), `:disabled` (0.45 opacity, progress cursor), `:focus-visible` (amber outline).
-
-Rules: one per screen, full width of its column, label UPPERCASE with 3.5px tracking, verb-first (`FIX ZOOM`). No secondary/ghost variants exist in this system — if a screen needs two actions, it's off-brand.
+Rules: exactly one per screen. No gradients, no glow, no pill radius — this is the Fluent primary, distinct from the pill chips. Focus ring: 2px `--text` outline, 2px offset.

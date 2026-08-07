@@ -1,5 +1,10 @@
 # Popup
 
-The whole product surface: 360px-wide popup on the ink gradient. Anatomy top-to-bottom: LogoLockup header → StatusPill → FixButton (Zoom tabs only) → one-line result → hazard-bar footer with Badges.
+The full 360px popup on the navy gradient. Layout order, top to bottom:
 
-Layout rules: single centered column, 14px gap, 18–20px padding. On non-Zoom tabs the button is absent (not disabled) and the pill goes `.neutral`. The result line is the only prose — one sentence, centered, dim by default, colored by outcome (`.good`/`.warn`/`.bad`).
+1. **Topbar** — static chips: version left, `Cookies only` right (compact).
+2. **Header** — LogoLockup (transparent gear mark, white wordmark, accent separator, uppercase descriptor).
+3. **Main** — StatusPill, the single FIX ZOOM FixButton (hidden in non-Zoom state), one dim result line.
+4. **Footer** — hairline `--border` top edge; `Feedback & Report` + `Visit Website` link pills centered on one row (44px targets).
+
+Two canonical states: Zoom tab (READY + button) and non-Zoom (`.neutral` pill, no button, guidance line). The center column stays logo / status / action only — no forms, no logs, no settings. The retired hazard stripe must not return.

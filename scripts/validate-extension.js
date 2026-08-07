@@ -113,6 +113,15 @@ if (!versionChip) fail('popup.html has a version chip fallback');
 else if (versionChip[1] === manifest.version) pass(`popup.html version chip matches manifest (v${manifest.version})`);
 else fail('popup.html version chip matches manifest', `popup.html v${versionChip[1]} vs manifest ${manifest.version}`);
 
+const topbarMarkup = popupHtml.match(/<div class="topbar">([\s\S]*?)<\/div>/);
+const footerMarkup = popupHtml.match(/<footer class="footer">([\s\S]*?)<\/footer>/);
+if (topbarMarkup && /id="appVersion"/.test(topbarMarkup[1])) pass('version badge is in the top bar');
+else fail('version badge is in the top bar');
+if (topbarMarkup && />Cookies only<\/span>/.test(topbarMarkup[1])) pass('Cookies only badge is in the top bar');
+else fail('Cookies only badge is in the top bar');
+if (footerMarkup && !/id="appVersion"|>Cookies only<\/span>/.test(footerMarkup[1])) pass('footer contains no version or scope badge');
+else fail('footer contains no version or scope badge');
+
 // --- 3. Popup file references --------------------------------------------
 group('popup files');
 const cssMatches = [...popupHtml.matchAll(/<link[^>]+href="([^"]+\.css)"/gi)].map(m => m[1]);
@@ -150,6 +159,11 @@ if (!entriesMatch) {
 }
 
 const popupJs = readText('popup.js');
+const popupCss = readText('popup.css');
+if (/\.footer-content\s*{[^}]*flex-wrap:\s*nowrap/s.test(popupCss)) pass('footer is locked to one row');
+else fail('footer is locked to one row');
+if (/\.logo-mark\s*{[^}]*background:\s*transparent[^}]*filter:\s*none/s.test(popupCss)) pass('header logo has no dark holder or shadow');
+else fail('header logo has no dark holder or shadow');
 const idsInHtml = new Set([...popupHtml.matchAll(/id="([^"]+)"/g)].map(m => m[1]));
 const idsInJs   = new Set([...popupJs.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(m => m[1]));
 for (const id of idsInJs) {

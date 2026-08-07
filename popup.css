@@ -76,9 +76,15 @@ body {
   z-index: 1;
 }
 .logo-mark {
+  display: block;
   width: 64px;
   height: 64px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+  object-fit: contain;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  filter: none;
 }
 .logo-title {
   font-size: 20px;
@@ -226,11 +232,11 @@ body {
 .footer { position: relative; z-index: 1; margin-top: auto; }
 .footer-content {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px 8px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   border-top: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.12);
 }
@@ -259,6 +265,8 @@ body {
   background: rgba(58, 130, 247, 0.1);
 }
 .site-link {
+  flex: 1 1 0;
+  justify-content: center;
   color: var(--text);
   border: 1px solid var(--border);
   background: var(--surface);

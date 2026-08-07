@@ -116,7 +116,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 > - No storage, cache, or IndexedDB clearing. Cookies are the only data type touched, so your Zoom preferences and cached assets survive.
 > - No data collection. No analytics. No telemetry.
 > - No remote code. Every script ships in the package.
-> - The cookie-clearing action sends no data and makes no network request. The website and feedback links open only when you click them.
+> - The cookie-clearing action sends no cookie data and makes no direct network request of its own; the tab reload afterwards loads the page normally, like any visit. The website and feedback links open only when you click them.
 > - No auto-clearing. Opening the popup never deletes anything by itself — every clear requires an explicit click on FIX ZOOM.
 > - No reading of your cookie values. The extension only deletes; it reports a count and nothing else.
 > - No access to non-Zoom domains.

@@ -6,6 +6,7 @@
   .btn-zoom:hover:not(:disabled) { background:var(--accent-hover); transform:translateY(-1px); }
   .btn-zoom:active:not(:disabled) { background:var(--accent-down); transform:none; }
   .btn-zoom:disabled { opacity:0.45; cursor:progress; }
+  .btn-zoom:focus-visible { outline:2px solid var(--text); outline-offset:2px; }
 </style>
 <button class="btn-zoom" type="button">FIX ZOOM</button>
 <button class="btn-zoom" type="button" disabled>FIX ZOOM</button>

@@ -43,7 +43,7 @@ The extension **never reads, transmits, copies, or logs the values** of cookies 
 
 ## What data the extension collects or transmits
 
-- The **FIX ZOOM** action performs **zero network requests** and sends no data. The website and feedback links open a normal browser tab only when the user clicks them.
+- The **FIX ZOOM** action sends **no cookie data and issues no direct network request of its own**. After clearing, it reloads the active Zoom tab, and that reload loads the page's own resources exactly like any normal visit — the extension adds nothing to that traffic. The website and feedback links open a normal browser tab only when the user clicks them.
 - **No telemetry, analytics, or remote logging.** No Google Analytics, no Mixpanel, no Amplitude, no Sentry, no Segment, no PostHog, no Hotjar, no custom beacon — confirmed by the source-level validator and by the absence of `fetch`, `XMLHttpRequest`, `WebSocket`, and `sendBeacon` from the extension runtime.
 - **No remote code.** All scripts and styles ship in the package. Nothing is fetched at runtime, evaluated, or injected from a remote URL. The extension does not use `eval` or `new Function`.
 - **No external fonts, images, or stylesheets.**

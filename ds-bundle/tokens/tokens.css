@@ -29,7 +29,7 @@
   --text-dim: #9ca8bd;
 
   /* Type + radius scale (buttons 8px, badges pill) */
-  --font: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font: 'Segoe UI Variable', 'Segoe UI', -apple-system, blinkmacsystemfont, sans-serif;
   --radius-btn: 8px;
   --radius-pill: 999px;
 }

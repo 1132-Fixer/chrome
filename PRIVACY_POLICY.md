@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Privacy Policy
-description: Privacy policy for the 1132 Fixer Chrome extension. Zoom cookies only. No data collection, no telemetry, no remote code, no external network calls.
+description: Privacy policy for the 1132 Fixer Chrome extension. Zoom cookies only. No data collection, telemetry, or remote code.
 hero_title: Privacy Policy
 hero_sub: 1132 Fixer does not collect, transmit, sell, share, or store any personal data. It deletes Zoom cookies — nothing else — locally in your own browser, and only when you click.
 permalink: /privacy.html
@@ -17,9 +17,9 @@ This is the privacy policy for the **1132 Fixer** Chrome extension distributed v
 
 ## What the extension does
 
-- It is the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows). It exists to mitigate Zoom error 1132 and similar stale-cookie sign-in loops.
+- It is the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows-Releases/releases/latest). It exists to mitigate Zoom error 1132 and similar stale-cookie sign-in loops.
 - When the active tab is on `zoom.us`, `zoom.com`, or any of their subdomains, the popup shows the detected host and a single **FIX ZOOM** button. Clicking it deletes Zoom cookies and reloads the active Zoom tab.
-- On any other site (or `chrome://` / `about:` pages), the popup shows one line asking you to open a Zoom tab. No button, no action — the extension does not request host access to non-Zoom domains.
+- On any other site (or `chrome://` / `about:` pages), **FIX ZOOM** stays hidden. The website and feedback links remain available. The extension does not request host access to non-Zoom domains.
 - All clearing is **user-triggered**. Opening the popup never deletes anything by itself; no install, startup, page-load, or timer hook clears data.
 
 ## What data the extension may clear (locally, after a user click)
@@ -43,7 +43,7 @@ The extension **never reads, transmits, copies, or logs the values** of cookies 
 
 ## What data the extension collects or transmits
 
-- **None.** The extension performs **zero network requests**. It does not contact any first-party or third-party server.
+- The **FIX ZOOM** action sends **no cookie data and issues no direct network request of its own**. After clearing, it reloads the active Zoom tab, and that reload loads the page's own resources exactly like any normal visit — the extension adds nothing to that traffic. The website and feedback links open a normal browser tab only when the user clicks them.
 - **No telemetry, analytics, or remote logging.** No Google Analytics, no Mixpanel, no Amplitude, no Sentry, no Segment, no PostHog, no Hotjar, no custom beacon — confirmed by the source-level validator and by the absence of `fetch`, `XMLHttpRequest`, `WebSocket`, and `sendBeacon` from the extension runtime.
 - **No remote code.** All scripts and styles ship in the package. Nothing is fetched at runtime, evaluated, or injected from a remote URL. The extension does not use `eval` or `new Function`.
 - **No external fonts, images, or stylesheets.**
@@ -83,7 +83,7 @@ If extension behavior changes in a way that affects this policy, this document w
 
 The claims above can be verified directly from this repository:
 
-- `node scripts/validate-extension.js` runs 97 source-level checks, including bans on `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, `eval`, `new Function`, common analytics SDK names, any `http(s)://` URL appearing inside `popup.html` / `popup.js` / `popup.css`, and explicit safety guards that fail the build if the manifest re-introduces `<all_urls>`, `browsingData` or `scripting`, if a non-Zoom host is added to `host_permissions`, if popup code touches `localStorage` / `sessionStorage` / IndexedDB / `cacheStorage` / service workers, or if a manual scope picker leaks back in.
-- `node scripts/test-popup-e2e.js` runs 90 behaviour checks against the real popup in headless Chromium, including assertions that `chrome.browsingData`, `chrome.scripting` and `chrome.storage` are never even read, that nothing happens on non-Zoom or lookalike hosts, and that the popup issues zero network requests.
+- `node scripts/validate-extension.js` checks the source. It bans `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, remote code, telemetry, broad host access, and unsafe browser-data APIs. Only the two approved user-clicked links are allowed.
+- `node scripts/test-popup-e2e.js` checks the real popup in headless Chromium. It proves the cookie action stays on Zoom hosts, does not use other browser-data APIs, and makes no runtime network request.
 - `manifest.json` lists only two permissions (`cookies`, `activeTab`) and the four Zoom host patterns documented above.
 - `popup.js` is short enough to audit by reading top to bottom. The only destructive call in the file is `chrome.cookies.remove`, scoped to Zoom domains and gated behind an explicit click on `#zoomFixBtn`.

@@ -15,21 +15,25 @@ Link `styles.css`. Set the page/container background to the ink gradient and def
 
 ## Token vocabulary (the only colors that exist)
 
-- Ink stage: `--ink-900` `#050a14`, `--ink-800` `#081018`, `--ink-700` `#0a1020`
-- Brand amber: `--amber-400` `#f5a623`, `--amber-500` `#ff8c00`, `--amber-glow`
-- Action blue (primary CTA only): `--blue-300` `#4aa3ff`, `--blue-400` `#2d8cff`, `--blue-600` `#1a6fb5`
-- Semantic: `--green-500` `#22c55e` (success), `--red-500` `#ef4444` (error), amber doubles as warning
-- Text: `--text` `#f0f0f0`, `--text-dim` `#8ca4c0`
-- Hazard stripe: `--hazard-yellow` `#f5c518` on `--hazard-black` `#1a1a1a`, always a repeating -45° 8px/16px stripe
-- Type: `--font` (Segoe UI stack); display text is weight 900 with wide letter-spacing (3px)
-- Radii: `--radius-pill` 50px for pills/badges, `--radius-mark` 14px for the logo mark
+- Navy stage: `#17243a` → `#203857` gradient grounds; panel inks per popup.css
+- Action blue (primary CTA only): `--accent` `#3a82f7`
+- Semantic: `--green-500` `#22c55e` (success), `--red-500` `#ef4444` (error), amber `#f5a623` is WARNING ONLY — never brand/identity
+- Text: `--text` `#f4f7fb`, `--text-dim` `#9ca8bd`
+- RETIRED (branding correction 2026-08-07, do not reintroduce): the amber brand
+  identity, `--amber-glow`, the hazard stripe motif, weight-900 glow display
+  text, and every holder behind the logo (circle, plate, radius stage, shadow
+  disk, radial-glow placeholder). The bare transparent gear
+  (`icons/popup-logo.png`) is the only in-app mark.
+- Type: `--font` (Segoe UI stack); display weight 600–700, no glow
+- Radii: `--radius-pill` 50px for pills/badges; the logo mark has NO radius
 
 ## Idiom
 
-- One screen, one primary action: a single `.btn-zoom`-style blue pill button. Never two primary buttons.
+- One screen, one primary action: a single `.btn-zoom`-style blue button. Never two primary buttons.
 - State is a `.status-badge` pill (`.scanning` amber, `.done` green, `.error` red, `.neutral` grey) with an 8px `.status-dot`.
-- Amber is brand/identity and warning; blue is exclusively the action button; green/red are outcomes only.
-- The hazard bar (`.hazard-bar`) is the signature footer motif — 6px tall, 0.7 opacity.
+- Amber is WARNING only; blue is exclusively the action button; green/red are outcomes only.
+- The footer is a plain one-row bar: `Feedback & Report` + `Visit Website`. The hazard bar is retired.
+- The product descriptor line is the locked tagline: `One-click fix for Zoom Error 1132`.
 - Labels are UPPERCASE, small (10–11px), wide-tracked.
 
 ## Truth

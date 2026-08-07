@@ -85,7 +85,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 | ------------------- | ------------------------------------------------------------------------------------------------- |
 | `manifest.json`     | Required at zip root.                                                                             |
 | `popup.html/css/js` | Extension runtime.                                                                                |
-| `icons/`            | All four sizes (source + 16/48/128); ships the brand asset.                                        |
+| `icons/`            | Source 144px + 16/32/48/128 + `popup-logo.png` (transparent popup header mark).                    |
 | `LICENSE`           | MIT license, helpful for reviewers.                                                               |
 | `README.md`         | Reviewer-readable description of behavior and manual test steps.                                  |
 | `PRIVACY_POLICY.md` | Ships the canonical privacy text alongside the runtime so the public hosted URL can be audited against it. |
@@ -116,7 +116,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 > - No storage, cache, or IndexedDB clearing. Cookies are the only data type touched, so your Zoom preferences and cached assets survive.
 > - No data collection. No analytics. No telemetry.
 > - No remote code. Every script ships in the package.
-> - No external network requests at any point.
+> - The cookie-clearing action sends no cookie data and makes no direct network request of its own; the tab reload afterwards loads the page normally, like any visit. The website and feedback links open only when you click them.
 > - No auto-clearing. Opening the popup never deletes anything by itself — every clear requires an explicit click on FIX ZOOM.
 > - No reading of your cookie values. The extension only deletes; it reports a count and nothing else.
 > - No access to non-Zoom domains.
@@ -130,7 +130,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 >
 > **Open source**
 >
-> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows). MIT licensed. Source: <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
+> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows-Releases/releases/latest). MIT licensed. Source: <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
 >
 > Independent project. Not affiliated with Zoom Video Communications, Inc.
 
@@ -154,12 +154,12 @@ All generators are Node + Chromium and run on any OS. The equivalent `.ps1` scri
 | ---------------------- | ----------------------------- | ------------------------------------- | -------- |
 | Icon 128×128           | PNG, opaque or transparent    | `icons/icon128.png`                   | present  |
 | Store icon 128×128     | 24-bit PNG, no alpha          | `store-assets/icon128-store.png`      | **VERIFIED 128×128, 24-bit RGB** — `npm run assets` (`scripts/make-store-icon.js`) flattens the shipped icon onto the popup navy. |
-| Small promo tile       | 440×280 PNG (**required by store**) | `store-assets/promo-440x280.png`      | **VERIFIED 440×280, 24-bit RGB** — `scripts/make-promo.js`: shipped 1132 icon, popup dark/amber palette, `1132 FIXER` wordmark, tagline "Fix Zoom cookies in one click.", subline "One button. Zoom cookies only. Reload.", and the "Independent project. Not affiliated with Zoom." disclaimer. No Zoom logo. Text auto-fits by measurement, so the copy can change without overflowing. |
+| Small promo tile       | 440×280 PNG (**required by store**) | `store-assets/promo-440x280.png`      | **VERIFIED 440×280, 24-bit RGB** — `scripts/make-promo.js`: shipped 1132 icon, shared navy/blue palette, `1132 FIXER` wordmark, tagline "Fix Zoom cookies in one click.", subline "One button. Zoom cookies only. Reload.", and the "Independent project. Not affiliated with Zoom." disclaimer. No Zoom logo. Text auto-fits by measurement, so the copy can change without overflowing. |
 | Marquee promo          | 1400×560 PNG (optional)       | `store-assets/promo-1400x560.png`     | **VERIFIED 1400×560, 24-bit RGB** — same generator: `node scripts/make-promo.js 1400 560`. The layout box is centred, so the wider canvas stays balanced. |
 
 Promo-tile content rules (apply to all promo assets):
 
-- Reuse the same 1132 logo and dark / amber palette already shipping in `icons/icon128.png` and `popup.css`. Do not invent a new visual identity.
+- Reuse the same 1132 logo and the navy Fluent palette (Windows STYLEGUIDE) already shipping in `icons/icon128.png` and `popup.css`. Do not invent a new visual identity.
 - Use the wordmark **"1132 FIXER"**.
 - Allowed taglines (pick one): "Fix Zoom 1132. One click." / "Clear Zoom cookies, fast." / "1132? Cleared." Do **not** use Zoom's logo, wordmark, or product art — that risks trademark issues and store rejection.
 - Do **not** claim the extension clears storage, cache, or IndexedDB. As of v1.2.0 it clears cookies only, and promo copy that overstates the scope is grounds for rejection.
@@ -172,7 +172,7 @@ Capture at 1280×800 (preferred) or 640×400. Filenames are stable so the manual
 
 | # | Target filename                                          | Subject                                                                                                       | What it must prove                                                                                  | Required?               | Status   |
 | - | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------- | -------- |
-| 1 | `store-assets/01-zoom-detected.png`                      | Popup open on `https://zoom.us`.                                                                              | State pill reads `READY · zoom.us`, the single **FIX ZOOM** button is rendered, footer chip reads `COOKIES ONLY`.           | **yes**     | **VERIFIED 1280×800, 24-bit RGB** — captured from the real popup, letterboxed onto the popup navy |
+| 1 | `store-assets/01-zoom-detected.png`                      | Popup open on `https://zoom.us`.                                                                              | State pill reads `READY · zoom.us`, the single **FIX ZOOM** button is rendered, and `Cookies only` appears at the top-right. | **yes**     | **VERIFIED 1280×800, 24-bit RGB** — captured from the real popup, letterboxed onto the popup navy |
 | 2 | `store-assets/02-fix-complete.png`                       | Popup immediately after a successful **FIX ZOOM** click.                                                       | State pill reads `CLEARED` and the result line reports the outcome (a cookie count on a real session; "No Zoom cookies were left to remove." against the empty mocked jar). | **yes**     | **VERIFIED 1280×800, 24-bit RGB** — result line preserved verbatim, nothing staged  |
 | 3 | `store-assets/03-non-zoom-safe.png`                      | Popup on a clearly non-Zoom site such as `https://example.com`.                                               | State pill reads `NOT ZOOM` in neutral grey, **no button at all**, one line telling the user to open a Zoom tab.            | **yes**     | **VERIFIED 1280×800, 24-bit RGB**                                                  |
 | 4 | `store-assets/04-extension-details-permissions.png`      | `chrome://extensions` → **Details** page for 1132 Fixer.                                                      | Shows the real Details page: version `1.2.0`, ID, an **empty Permissions row**, and Site access listing exactly the four Zoom host patterns — no browsing-data permission anywhere. | recommended | **VERIFIED 1280×800, 24-bit RGB on v1.2.0** — real load-unpacked Chromium; the capture scrolls the details container so every host pattern is in frame |
@@ -191,13 +191,15 @@ Run every row of the **Manual test checklist** in [README.md](README.md). Captur
 
 ## Package zip — verified contents
 
-Running the packaging command above produces an 11-entry zip. **Verified locally** — see the "Tests / checks run" section of the most recent task report for the exact byte count and entry list. The shape is:
+Running the packaging command above produces a 13-entry zip. **Verified locally** — see the "Tests / checks run" section of the most recent task report for the exact byte count and entry list. The shape is:
 
 ```
 icons/icon.png         (source 144×144 — safe to ship as the brand asset)
 icons/icon16.png
+icons/icon32.png
 icons/icon48.png
 icons/icon128.png
+icons/popup-logo.png   (transparent popup header mark)
 manifest.json
 popup.html
 popup.css
@@ -219,8 +221,8 @@ PRIVACY_POLICY.md
 ## Validation gate before packaging
 
 ```bash
-node scripts/validate-extension.js    # 97 source-level checks
-node scripts/test-popup-e2e.js        # 90 headless-Chromium behaviour checks
+node scripts/validate-extension.js    # source and safety checks
+node scripts/test-popup-e2e.js        # headless-Chromium behavior checks
 # or: npm test
 ```
 
@@ -303,8 +305,8 @@ Pricing:          Free
 
 | Method                                                                        | Status                                                                                                                                            |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Source-level validator (`scripts/validate-extension.js`)                      | **PASS** — 97/97 on v1.2.0, run before every push and in CI. Adds cookies-only guards (no `browsingData` / `scripting` / storage / IndexedDB / cacheStorage / service-worker code), one-button UI guards, and version-sync checks on top of the v1.1.0 zoom-only guards. |
-| Popup end-to-end suite (`scripts/test-popup-e2e.js`)                          | **PASS** — 90/90 on v1.2.0. Real popup in headless Chromium against a recording `chrome.*` mock: cookie removal is exact and deduplicated, Secure/non-Secure URLs correct, `partitionKey` round-trips, tab reloads once, partial failure and unreadable-jar paths report honestly, nothing happens on `example.com` / `chrome://extensions` / `zoom.us.evil.com` / `evilzoom.us`, `chrome.browsingData` / `chrome.scripting` / `chrome.storage` are never read, zero network requests, zero page errors. |
+| Source-level validator (`scripts/validate-extension.js`)                      | **PASS** — run before every push and in CI. It protects the cookies-only scope, one-primary-action layout, version sync, approved links, package contents, and transparent header logo. |
+| Popup end-to-end suite (`scripts/test-popup-e2e.js`)                          | **PASS** — the real popup runs in headless Chromium against a recording `chrome.*` mock. It checks exact cookie removal, Zoom-only behavior, honest errors, one tab reload, and no runtime network requests. |
 | Playwright headless Chromium against `file:///popup.html` (mocked `chrome.*`) | **PASS** — `scripts/capture-screenshots.js` renders the real popup HTML/CSS/JS end-to-end and regenerated shots 01–03 for the v1.2.0 one-button UI. |
 | Real Chromium load-unpacked via Playwright `launchPersistentContext --load-extension` | **PASS on v1.2.0** — `scripts/capture-extension-details.js` loaded the unpacked repo, discovered the item id, and captured the Details page. Chrome itself reports version `1.2.0`, an empty Permissions row, and Site access limited to the four Zoom patterns — independent confirmation that `browsingData` and `scripting` are gone. |
 | Real Chrome operator walk against live `zoom.us`                              | **pending** — the harness Chromium carries no signed-in Zoom session, so the "signed out after clear, preferences survive" rows of the README checklist need an operator run. |
@@ -315,8 +317,8 @@ Pricing:          Free
 Chrome version:               Playwright Chromium 1.56.1 (headless)
 OS:                           Linux (CI container)
 Date/time:                    2026-08-04
-Source validator:             97/97 PASS
-Popup e2e suite:              90/90 PASS
+Source validator:             PASS
+Popup e2e suite:              PASS
 Zoom host detected:           yes — state pill `READY · zoom.us`, single FIX ZOOM button (screenshot 01)
 Subdomain detected:           yes — `READY · us02web.zoom.us` (e2e scenario 5)
 FIX ZOOM completed:           yes — pill reached CLEARED (screenshot 02); with a stocked mock jar, all 4 cookies removed exactly once

@@ -1,9 +1,9 @@
 # StatusPill
 
-The one state indicator. Variants: default/ready (green, pulsing dot), `.scanning` (amber, blinking dot), `.done` (green, static dot), `.error` (red, static dot), `.neutral` (grey, static dot — "nothing to act on", not failure).
+One state pill per screen: `ready` (green, default), `.scanning` (amber, blinking dot), `.done` (green, static dot), `.error` (red), `.neutral` (surface + `--text-dim`, for "nothing to act on" — not "all good").
 
 ```html
-<span class="status-badge scanning"><span class="status-dot"></span>WORKING</span>
+<span class="status-badge scanning"><span class="status-dot"></span>SCANNING</span>
 ```
 
-Rules: label UPPERCASE, ≤3 words (host suffix allowed, e.g. `READY · zoom.us`). One pill per screen. Neutral means out-of-scope, never success or error.
+Rules: 12px / 700 / 1.4px tracking; flat tinted backgrounds (no gradients); dot glow is 4px max. Warnings live here, never on badges.

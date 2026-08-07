@@ -56,7 +56,7 @@ const popupPath = manifest.action && manifest.action.default_popup;
 if (popupPath && exists(popupPath)) pass(`action.default_popup exists: ${popupPath}`);
 else fail('action.default_popup exists', popupPath || '(missing)');
 
-for (const size of ['16', '48', '128']) {
+for (const size of ['16', '32', '48', '128']) {
   const p = manifest.icons && manifest.icons[size];
   if (p && exists(p)) pass(`icons.${size} exists: ${p}`);
   else fail(`icons.${size} exists`, p || '(missing)');
@@ -113,6 +113,15 @@ if (!versionChip) fail('popup.html has a version chip fallback');
 else if (versionChip[1] === manifest.version) pass(`popup.html version chip matches manifest (v${manifest.version})`);
 else fail('popup.html version chip matches manifest', `popup.html v${versionChip[1]} vs manifest ${manifest.version}`);
 
+const topbarMarkup = popupHtml.match(/<div class="topbar">([\s\S]*?)<\/div>/);
+const footerMarkup = popupHtml.match(/<footer class="footer">([\s\S]*?)<\/footer>/);
+if (topbarMarkup && /id="appVersion"/.test(topbarMarkup[1])) pass('version badge is in the top bar');
+else fail('version badge is in the top bar');
+if (topbarMarkup && />Cookies only<\/span>/.test(topbarMarkup[1])) pass('Cookies only badge is in the top bar');
+else fail('Cookies only badge is in the top bar');
+if (footerMarkup && !/id="appVersion"|>Cookies only<\/span>/.test(footerMarkup[1])) pass('footer contains no version or scope badge');
+else fail('footer contains no version or scope badge');
+
 // --- 3. Popup file references --------------------------------------------
 group('popup files');
 const cssMatches = [...popupHtml.matchAll(/<link[^>]+href="([^"]+\.css)"/gi)].map(m => m[1]);
@@ -128,7 +137,33 @@ for (const js of jsMatches) {
 if (cssMatches.length === 0) fail('popup.html links a stylesheet');
 if (jsMatches.length === 0) fail('popup.html includes popup.js');
 
+const imgMatches = [...popupHtml.matchAll(/<img[^>]+src="([^"]+)"/gi)].map(m => m[1]);
+for (const img of imgMatches) {
+  if (exists(img)) pass(`popup.html references existing image: ${img}`);
+  else fail(`popup.html references existing image: ${img}`);
+}
+
+// Every local asset the popup references must ship in the store zip. This is
+// the gate that was missing when popup-logo.png was referenced but left out
+// of the package ENTRIES — source-tree checks alone stay green on that.
+const packagerSrc = readText('scripts/package-extension.js');
+const entriesMatch = packagerSrc.match(/const ENTRIES = \[([\s\S]*?)\];/);
+if (!entriesMatch) {
+  fail('package-extension.js ENTRIES list is parseable');
+} else {
+  const entries = new Set([...entriesMatch[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
+  for (const ref of [...cssMatches, ...jsMatches, ...imgMatches]) {
+    if (entries.has(ref)) pass(`popup asset is packaged: ${ref}`);
+    else fail(`popup asset is packaged: ${ref}`, 'missing from package-extension.js ENTRIES');
+  }
+}
+
 const popupJs = readText('popup.js');
+const popupCss = readText('popup.css');
+if (/\.footer-content\s*{[^}]*flex-wrap:\s*nowrap/s.test(popupCss)) pass('footer is locked to one row');
+else fail('footer is locked to one row');
+if (/\.logo-mark\s*{[^}]*background:\s*transparent[^}]*filter:\s*none/s.test(popupCss)) pass('header logo has no dark holder or shadow');
+else fail('header logo has no dark holder or shadow');
 const idsInHtml = new Set([...popupHtml.matchAll(/id="([^"]+)"/g)].map(m => m[1]));
 const idsInJs   = new Set([...popupJs.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(m => m[1]));
 for (const id of idsInJs) {
@@ -186,12 +221,19 @@ for (const f of SCAN_FILES) {
 }
 pass(`scanned ${SCAN_FILES.length} files for telemetry/remote-code tokens`);
 
-const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/g;
+const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/gi;
+// Static navigation links the popup may carry. NOT runtime code: no fetch, no
+// script, just an <a href> the user clicks. Keep this list exact-match tiny.
+const ALLOWED_STATIC_LINKS = new Set([
+  'https://1132-fixer.xyz/',
+  'https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new',
+]);
 for (const f of SCAN_FILES) {
   const txt = readText(f);
   const urls = (txt.match(RUNTIME_URL_RE) || []).filter(u => {
     if (/^https?:\/\/\$\{/.test(u)) return false;
     if (/^https?:\/\/$/.test(u))    return false;
+    if (f === 'popup.html' && ALLOWED_STATIC_LINKS.has(u)) return false;
     return true;
   });
   if (urls.length === 0) pass(`${f} has no runtime URLs`);

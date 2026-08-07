@@ -7,13 +7,15 @@
   'use strict';
   window.Fixer1132 = {
     tokens: {
-      ink: { 900: '#050a14', 800: '#081018', 700: '#0a1020' },
-      amber: { 400: '#f5a623', 500: '#ff8c00' },
-      blue: { 300: '#4aa3ff', 400: '#2d8cff', 600: '#1a6fb5' },
-      green: { 500: '#22c55e' },
-      red: { 500: '#ef4444' },
-      text: { base: '#f0f0f0', dim: '#8ca4c0' },
-      hazard: { yellow: '#f5c518', black: '#1a1a1a' },
+      bg: { 0: '#17243a', 1: '#203857' },
+      surface: { base: '#1e2b46', elev: '#243453' },
+      border: { base: 'rgba(255,255,255,0.08)', hi: 'rgba(58,130,247,0.4)' },
+      accent: { base: '#3a82f7', hover: '#4b93ff', down: '#2f6fd6', soft: '#8fc2ff' },
+      green: { 500: '#39d353' },
+      amber: { 400: '#f2c94c' },
+      red: { 500: '#f85149' },
+      text: { base: '#f4f7fb', dim: '#9ca8bd' },
+      radius: { btn: '8px', pill: '999px' },
     },
   };
 })();

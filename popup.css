@@ -53,6 +53,18 @@ body {
   user-select: none;
 }
 
+/* ===== TOP BAR ===== */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px 0;
+  position: relative;
+  z-index: 1;
+}
+/* Static info pills stay compact — the 44px floor is for interactive targets. */
+.topbar .badge { min-height: 0; padding: 6px 12px; }
+
 /* ===== HEADER ===== */
 .header {
   display: flex;

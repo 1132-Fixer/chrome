@@ -9,7 +9,7 @@
   .version-badge { color:var(--text-dim); border:1px solid var(--border); background:var(--surface); }
   .scope-badge { color:var(--accent-soft); border:1px solid var(--border-hi); background:rgba(58,130,247,0.1); }
   .header { display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 20px 0; }
-  .logo-mark { width:64px; height:64px; background:radial-gradient(circle at 50% 40%, #3a82f7 0%, transparent 75%); }
+  .logo-mark { width:64px; height:64px; display:block; object-fit:contain; background:transparent; border:0; border-radius:0; box-shadow:none; filter:none; }
   .logo-title { font-size:20px; font-weight:600; letter-spacing:2px; line-height:1; color:var(--text); }
   .logo-sep { width:46px; height:2px; border-radius:1px; background:var(--accent); opacity:0.6; }
   .logo-desc { color:var(--text-dim); font-size:12px; letter-spacing:1.2px; text-transform:uppercase; }
@@ -27,7 +27,7 @@
 </style>
 <div class="popup">
   <div class="topbar"><span class="badge version-badge">v1.2.1</span><span class="badge scope-badge">Cookies only</span></div>
-  <div class="header"><div class="logo-mark"></div><span class="logo-title">1132 FIXER</span><div class="logo-sep"></div><span class="logo-desc">Zoom Cookie Cleaner</span></div>
+  <div class="header"><img class="logo-mark" src="../../../../icons/popup-logo.png" alt=""><span class="logo-title">1132 FIXER</span><div class="logo-sep"></div><span class="logo-desc">One-click fix for Zoom Error 1132</span></div>
   <div class="main">
     <span class="status-badge"><span class="status-dot"></span>READY</span>
     <button class="btn-zoom" type="button">FIX ZOOM</button>
@@ -37,7 +37,7 @@
 </div>
 <div class="popup">
   <div class="topbar"><span class="badge version-badge">v1.2.1</span><span class="badge scope-badge">Cookies only</span></div>
-  <div class="header"><div class="logo-mark"></div><span class="logo-title">1132 FIXER</span><div class="logo-sep"></div><span class="logo-desc">Zoom Cookie Cleaner</span></div>
+  <div class="header"><img class="logo-mark" src="../../../../icons/popup-logo.png" alt=""><span class="logo-title">1132 FIXER</span><div class="logo-sep"></div><span class="logo-desc">One-click fix for Zoom Error 1132</span></div>
   <div class="main">
     <span class="status-badge neutral"><span class="status-dot"></span>NOT ZOOM</span>
     <p class="result">Open a zoom.us or zoom.com tab, then click this icon again.</p>

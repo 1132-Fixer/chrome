@@ -3,14 +3,14 @@
   :root { --accent:#3a82f7; --text:#f4f7fb; --text-dim:#9ca8bd; }
   body { margin:0; padding:24px; display:flex; justify-content:center; font-family:'Segoe UI Variable','Segoe UI',sans-serif; background:linear-gradient(180deg,#17243a,#203857); }
   .logo-lockup { display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .logo-mark { width:64px; height:64px; background:radial-gradient(circle at 50% 40%, #3a82f7 0%, transparent 75%); }
+  .logo-mark { display:block; width:64px; height:64px; object-fit:contain; background:transparent; border:0; border-radius:0; box-shadow:none; filter:none; }
   .logo-title { font-size:20px; font-weight:600; letter-spacing:2px; line-height:1; color:var(--text); }
   .logo-sep { width:46px; height:2px; border-radius:1px; background:var(--accent); opacity:0.6; }
   .logo-desc { color:var(--text-dim); font-size:12px; letter-spacing:1.2px; text-transform:uppercase; }
 </style>
 <div class="logo-lockup">
-  <div class="logo-mark" role="img" aria-label="1132 Fixer gear mark placeholder"></div>
+  <img class="logo-mark" src="../../../../icons/popup-logo.png" alt="1132 Fixer transparent gear mark">
   <span class="logo-title">1132 FIXER</span>
   <div class="logo-sep"></div>
-  <span class="logo-desc">Zoom Cookie Cleaner</span>
+  <span class="logo-desc">One-click fix for Zoom Error 1132</span>
 </div>

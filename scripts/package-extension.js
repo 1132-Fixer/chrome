@@ -34,6 +34,7 @@ const ENTRIES = [
   'icons/icon32.png',
   'icons/icon48.png',
   'icons/icon128.png',
+  'icons/popup-logo.png',
   'LICENSE',
   'README.md',
   'PRIVACY_POLICY.md',

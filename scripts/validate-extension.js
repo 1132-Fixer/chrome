@@ -128,6 +128,27 @@ for (const js of jsMatches) {
 if (cssMatches.length === 0) fail('popup.html links a stylesheet');
 if (jsMatches.length === 0) fail('popup.html includes popup.js');
 
+const imgMatches = [...popupHtml.matchAll(/<img[^>]+src="([^"]+)"/gi)].map(m => m[1]);
+for (const img of imgMatches) {
+  if (exists(img)) pass(`popup.html references existing image: ${img}`);
+  else fail(`popup.html references existing image: ${img}`);
+}
+
+// Every local asset the popup references must ship in the store zip. This is
+// the gate that was missing when popup-logo.png was referenced but left out
+// of the package ENTRIES — source-tree checks alone stay green on that.
+const packagerSrc = readText('scripts/package-extension.js');
+const entriesMatch = packagerSrc.match(/const ENTRIES = \[([\s\S]*?)\];/);
+if (!entriesMatch) {
+  fail('package-extension.js ENTRIES list is parseable');
+} else {
+  const entries = new Set([...entriesMatch[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
+  for (const ref of [...cssMatches, ...jsMatches, ...imgMatches]) {
+    if (entries.has(ref)) pass(`popup asset is packaged: ${ref}`);
+    else fail(`popup asset is packaged: ${ref}`, 'missing from package-extension.js ENTRIES');
+  }
+}
+
 const popupJs = readText('popup.js');
 const idsInHtml = new Set([...popupHtml.matchAll(/id="([^"]+)"/g)].map(m => m[1]));
 const idsInJs   = new Set([...popupJs.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(m => m[1]));
@@ -186,7 +207,7 @@ for (const f of SCAN_FILES) {
 }
 pass(`scanned ${SCAN_FILES.length} files for telemetry/remote-code tokens`);
 
-const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/g;
+const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/gi;
 // Static navigation links the popup may carry. NOT runtime code: no fetch, no
 // script, just an <a href> the user clicks. Keep this list exact-match tiny.
 const ALLOWED_STATIC_LINKS = new Set([

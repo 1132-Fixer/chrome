@@ -85,7 +85,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 | ------------------- | ------------------------------------------------------------------------------------------------- |
 | `manifest.json`     | Required at zip root.                                                                             |
 | `popup.html/css/js` | Extension runtime.                                                                                |
-| `icons/`            | All four sizes (source + 16/48/128); ships the brand asset.                                        |
+| `icons/`            | Source 144px + 16/32/48/128 + `popup-logo.png` (transparent popup header mark).                    |
 | `LICENSE`           | MIT license, helpful for reviewers.                                                               |
 | `README.md`         | Reviewer-readable description of behavior and manual test steps.                                  |
 | `PRIVACY_POLICY.md` | Ships the canonical privacy text alongside the runtime so the public hosted URL can be audited against it. |
@@ -159,7 +159,7 @@ All generators are Node + Chromium and run on any OS. The equivalent `.ps1` scri
 
 Promo-tile content rules (apply to all promo assets):
 
-- Reuse the same 1132 logo and dark / amber palette already shipping in `icons/icon128.png` and `popup.css`. Do not invent a new visual identity.
+- Reuse the same 1132 logo and the navy Fluent palette (Windows STYLEGUIDE) already shipping in `icons/icon128.png` and `popup.css`. Do not invent a new visual identity.
 - Use the wordmark **"1132 FIXER"**.
 - Allowed taglines (pick one): "Fix Zoom 1132. One click." / "Clear Zoom cookies, fast." / "1132? Cleared." Do **not** use Zoom's logo, wordmark, or product art — that risks trademark issues and store rejection.
 - Do **not** claim the extension clears storage, cache, or IndexedDB. As of v1.2.0 it clears cookies only, and promo copy that overstates the scope is grounds for rejection.
@@ -191,13 +191,15 @@ Run every row of the **Manual test checklist** in [README.md](README.md). Captur
 
 ## Package zip — verified contents
 
-Running the packaging command above produces an 11-entry zip. **Verified locally** — see the "Tests / checks run" section of the most recent task report for the exact byte count and entry list. The shape is:
+Running the packaging command above produces a 13-entry zip. **Verified locally** — see the "Tests / checks run" section of the most recent task report for the exact byte count and entry list. The shape is:
 
 ```
 icons/icon.png         (source 144×144 — safe to ship as the brand asset)
 icons/icon16.png
+icons/icon32.png
 icons/icon48.png
 icons/icon128.png
+icons/popup-logo.png   (transparent popup header mark)
 manifest.json
 popup.html
 popup.css

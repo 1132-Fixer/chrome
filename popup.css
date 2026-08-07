@@ -20,19 +20,20 @@
   --border: rgba(255, 255, 255, 0.08);
   --border-hi: rgba(58, 130, 247, 0.4);
 
-  /* Accent (Windows system-accent fallback) */
+  /* Accent (Windows system-accent fallback; -soft mirrors Windows --info) */
   --accent: #3a82f7;
-  --accent-hover: #4c8df8;
+  --accent-hover: #4b93ff;
   --accent-down: #2f6fd6;
+  --accent-soft: #8fc2ff;
 
   /* Status */
   --green-500: #39d353;
   --amber-400: #f2c94c;
   --red-500: #f85149;
 
-  /* Text */
-  --text: #ffffff;
-  --text-dim: #7e8597;
+  /* Text (#7e8597 is the STYLEGUIDE *disabled* color — not for live copy) */
+  --text: #f4f7fb;
+  --text-dim: #9ca8bd;
 
   /* Type + radius scale (buttons 8px, badges pill) */
   --font: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -44,7 +45,7 @@ html, body { width: 360px; }
 
 body {
   font-family: var(--font);
-  background: linear-gradient(170deg, var(--bg-0) 0%, var(--bg-1) 100%);
+  background: linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -83,7 +84,7 @@ body {
 }
 .logo-desc {
   color: var(--text-dim);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
@@ -108,7 +109,7 @@ body {
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   color: var(--green-500);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.4px;
   border: 1px solid rgba(57, 211, 83, 0.45);
@@ -200,7 +201,7 @@ body {
 .result {
   min-height: 30px;
   color: var(--text-dim);
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.5;
   text-align: center;
   text-wrap: pretty;
@@ -211,12 +212,6 @@ body {
 
 /* ===== FOOTER ===== */
 .footer { position: relative; z-index: 1; margin-top: auto; }
-.hazard-bar {
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0.5;
-}
 .footer-content {
   display: flex;
   flex-wrap: wrap;
@@ -227,15 +222,18 @@ body {
   border-top: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.12);
 }
+/* Chip spec mirrors the Windows footer badges (12px / 600 / 0.2px / 8x14);
+   44px min-height satisfies the STYLEGUIDE minimum target size. */
 .badge {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
   line-height: 1;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.3px;
-  padding: 6px 12px;
+  min-height: 44px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 8px 14px;
   border-radius: var(--radius-pill);
 }
 .version-badge {
@@ -244,19 +242,17 @@ body {
   background: var(--surface);
 }
 .scope-badge {
-  color: #8ab4f8;
+  color: var(--accent-soft);
   border: 1px solid var(--border-hi);
   background: rgba(58, 130, 247, 0.1);
-  text-transform: uppercase;
 }
 .site-link {
   color: var(--text);
   border: 1px solid var(--border);
   background: var(--surface);
   text-decoration: none;
-  text-transform: uppercase;
 }
-.site-link:hover { border-color: var(--border-hi); color: #8ab4f8; }
+.site-link:hover { border-color: var(--border-hi); color: var(--accent-soft); }
 .site-link:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;

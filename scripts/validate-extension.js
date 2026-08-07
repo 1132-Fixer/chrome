@@ -56,7 +56,7 @@ const popupPath = manifest.action && manifest.action.default_popup;
 if (popupPath && exists(popupPath)) pass(`action.default_popup exists: ${popupPath}`);
 else fail('action.default_popup exists', popupPath || '(missing)');
 
-for (const size of ['16', '48', '128']) {
+for (const size of ['16', '32', '48', '128']) {
   const p = manifest.icons && manifest.icons[size];
   if (p && exists(p)) pass(`icons.${size} exists: ${p}`);
   else fail(`icons.${size} exists`, p || '(missing)');

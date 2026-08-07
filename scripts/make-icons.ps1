@@ -1,4 +1,4 @@
-# Resize icons/icon.png into icon16/48/128 used by manifest.
+# Resize icons/icon.png into icon16/32/48/128 used by manifest.
 # Run from project root: powershell -ExecutionPolicy Bypass -File scripts/make-icons.ps1
 
 Add-Type -AssemblyName System.Drawing
@@ -7,7 +7,7 @@ $root = Split-Path $PSScriptRoot -Parent
 $src  = Join-Path $root 'icons/icon.png'
 if (-not (Test-Path $src)) { throw "Source icon missing: $src" }
 
-$sizes = 16, 48, 128
+$sizes = 16, 32, 48, 128
 foreach ($size in $sizes) {
   $dst = Join-Path $root ("icons/icon{0}.png" -f $size)
   $img = [System.Drawing.Image]::FromFile($src)

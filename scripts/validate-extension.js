@@ -187,11 +187,15 @@ for (const f of SCAN_FILES) {
 pass(`scanned ${SCAN_FILES.length} files for telemetry/remote-code tokens`);
 
 const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/g;
+// Static navigation links the popup may carry. NOT runtime code: no fetch, no
+// script, just an <a href> the user clicks. Keep this list exact-match tiny.
+const ALLOWED_STATIC_LINKS = new Set(['https://1132-fixer.xyz/']);
 for (const f of SCAN_FILES) {
   const txt = readText(f);
   const urls = (txt.match(RUNTIME_URL_RE) || []).filter(u => {
     if (/^https?:\/\/\$\{/.test(u)) return false;
     if (/^https?:\/\/$/.test(u))    return false;
+    if (f === 'popup.html' && ALLOWED_STATIC_LINKS.has(u)) return false;
     return true;
   });
   if (urls.length === 0) pass(`${f} has no runtime URLs`);

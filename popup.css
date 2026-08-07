@@ -244,6 +244,18 @@ body {
   background: rgba(58, 130, 247, 0.1);
   text-transform: uppercase;
 }
+.site-link {
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.site-link:hover { border-color: var(--border-hi); color: #8ab4f8; }
+.site-link:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
 
 /* ===== ACCESSIBILITY ===== */
 @media (prefers-reduced-motion: reduce) {

@@ -23,6 +23,10 @@ const { chromium } = requirePlaywright();
 const ROOT      = path.resolve(__dirname, '..');
 const POPUP_URL = pathToFileURL(path.join(ROOT, 'popup.html')).href;
 const POPUP_WIDTH = 360;
+// Version injected into the chrome.runtime.getManifest mock — the version
+// chip must reflect whatever the manifest says, so the assertion derives
+// from this constant instead of hardcoding a stale literal.
+const MOCK_VERSION = '1.2.0';
 
 let passed = 0;
 let failed = 0;
@@ -128,9 +132,10 @@ async function withPopup(cfg, fn) {
     page.on('request', r => { if (!r.url().startsWith('file:')) external.push(r.url()); });
 
     await page.goto(POPUP_URL, { waitUntil: 'load' });
+    // 'Checking…' is the static pre-JS pill text; init() always replaces it.
     await page.waitForFunction(() => {
       const t = document.getElementById('statusBadgeText');
-      return t && t.textContent && t.textContent !== 'Ready';
+      return t && t.textContent && t.textContent !== 'Checking…';
     }, { timeout: 10000 });
 
     await fn(page);
@@ -162,7 +167,7 @@ const ZOOM_JAR = [
   await withPopup({
     name: 'zoom.us',
     activeUrl: 'https://zoom.us/',
-    version: '1.2.0',
+    version: MOCK_VERSION,
     jar: ZOOM_JAR,
     partitionSupport: false,
   }, async (page) => {
@@ -172,7 +177,7 @@ const ZOOM_JAR = [
     check(before.fieldCount === 0,              'popup renders no inputs, checkboxes or selects', `got ${before.fieldCount}`);
     check(before.buttonLabel === 'FIX ZOOM',    'button label is FIX ZOOM', before.buttonLabel);
     check(before.status === 'READY · zoom.us',  'state pill shows the detected host', before.status);
-    check(before.version === 'v1.2.0',          'version chip comes from the manifest', before.version);
+    check(before.version === 'v' + MOCK_VERSION, 'version chip comes from the manifest', before.version);
     check(before.bodyWidth === POPUP_WIDTH,     `popup is ${POPUP_WIDTH}px wide`, String(before.bodyWidth));
     check(before.bodyScrollW <= POPUP_WIDTH,    'no horizontal overflow', `scrollWidth ${before.bodyScrollW}`);
     check(before.calls.remove.length === 0,     'opening the popup removes nothing');
@@ -202,7 +207,7 @@ const ZOOM_JAR = [
   await withPopup({
     name: 'partitioned',
     activeUrl: 'https://zoom.us/',
-    version: '1.2.0',
+    version: MOCK_VERSION,
     partitionSupport: true,
     jar: [
       { name: '_zm_ssid', domain: 'zoom.us', secure: true },
@@ -226,7 +231,7 @@ const ZOOM_JAR = [
   await withPopup({
     name: 'dedupe',
     activeUrl: 'https://zoom.us/',
-    version: '1.2.0',
+    version: MOCK_VERSION,
     partitionSupport: true,
     jar: [
       { name: '_zm_ssid', domain: 'zoom.us', secure: true },
@@ -244,7 +249,7 @@ const ZOOM_JAR = [
   await withPopup({
     name: 'partial',
     activeUrl: 'https://zoom.us/',
-    version: '1.2.0',
+    version: MOCK_VERSION,
     partitionSupport: false,
     jar: ZOOM_JAR,
     failNames: ['cred'],
@@ -261,7 +266,7 @@ const ZOOM_JAR = [
   await withPopup({
     name: 'empty',
     activeUrl: 'https://us02web.zoom.us/j/123',
-    version: '1.2.0',
+    version: MOCK_VERSION,
     partitionSupport: true,
     jar: [],
   }, async (page) => {
@@ -279,7 +284,7 @@ const ZOOM_JAR = [
   await withPopup({
     name: 'getAll fails',
     activeUrl: 'https://zoom.us/',
-    version: '1.2.0',
+    version: MOCK_VERSION,
     jar: ZOOM_JAR,
     getAllThrows: true,
   }, async (page) => {
@@ -303,7 +308,7 @@ const ZOOM_JAR = [
     await withPopup({
       name: label,
       activeUrl,
-      version: '1.2.0',
+      version: MOCK_VERSION,
       jar: ZOOM_JAR,
     }, async (page) => {
       const s = await readState(page);

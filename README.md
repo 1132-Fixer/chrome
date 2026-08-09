@@ -24,7 +24,7 @@
   &nbsp;•&nbsp;
   <a href="PRIVACY_POLICY.md"><strong>Privacy Policy</strong></a>
   &nbsp;•&nbsp;
-  <a href="https://github.com/PrimeUpYourLife/1132-Fixer-Windows-Releases/releases/latest"><strong>Windows App</strong></a>
+  <a href="https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest"><strong>Windows App</strong></a>
 </p>
 
 ---
@@ -90,7 +90,7 @@ The extension does not request `<all_urls>`, `browsingData`, `history`, or `scri
 - Open a tab on `zoom.us` or `zoom.com`.
 - Open the extension again.
 - If the popup says **NOT ZOOM**, check the address in the active tab.
-- If Error 1132 remains, try the [Windows app](https://github.com/PrimeUpYourLife/1132-Fixer-Windows-Releases/releases/latest) or send a [Feedback & Report](https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new).
+- If Error 1132 remains, try the [Windows app](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest) or send a [Feedback & Report](https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new).
 
 ## Current support status
 

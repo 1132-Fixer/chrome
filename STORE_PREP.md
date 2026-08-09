@@ -130,7 +130,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 >
 > **Open source**
 >
-> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows-Releases/releases/latest). MIT licensed. Source: <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
+> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest). MIT licensed. Source: <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
 >
 > Independent project. Not affiliated with Zoom Video Communications, Inc.
 

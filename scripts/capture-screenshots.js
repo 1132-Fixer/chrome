@@ -87,40 +87,45 @@ function chromeMock(activeUrl) {
   })();`;
 }
 
-/** Shot 02: click FIX ZOOM and wait for the terminal state pill. */
+/** Shot 02: click FIX ZOOM and wait for the SUCCESS pill — a published
+ * screenshot named "fix-complete" must never show ERROR or PARTIAL. */
 async function clickFixAndSettle(page) {
   await page.click('#zoomFixBtn');
   await page.waitForFunction(() => {
     const t = document.getElementById('statusBadgeText');
-    return t && /CLEARED|ERROR|PARTIAL/.test(t.textContent || '');
+    return t && /^CLEARED$/.test((t.textContent || '').trim());
   }, { timeout: 5000 });
 }
 
 const SHOTS = [
   // 01 — zoom.us active: state pill shows the host, one FIX ZOOM button
-  { name: '01-zoom-detected.png', activeUrl: 'https://zoom.us/' },
+  { name: '01-zoom-detected.png', activeUrl: 'https://zoom.us/', expectState: /^READY · / },
   // 02 — same setup, click FIX ZOOM, wait for the CLEARED state
-  { name: '02-fix-complete.png',  activeUrl: 'https://zoom.us/', after: clickFixAndSettle },
+  { name: '02-fix-complete.png',  activeUrl: 'https://zoom.us/', expectState: /^READY · /, after: clickFixAndSettle },
   // 03 — non-Zoom site: NOT ZOOM pill, no FIX ZOOM button, one explanatory line
-  { name: '03-non-zoom-safe.png', activeUrl: 'https://example.com/' },
+  { name: '03-non-zoom-safe.png', activeUrl: 'https://example.com/', expectState: /^NOT ZOOM$/ },
 ];
 
 /**
  * Load popup.html with the chrome mock, settle the requested popup state, then
  * run `fn(page)` and return its result.
  */
-async function withPopupState(browser, { activeUrl, after }, deviceScaleFactor, fn) {
+async function withPopupState(browser, { name, activeUrl, expectState, after }, deviceScaleFactor, fn) {
   const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor });
   try {
     await context.addInitScript(chromeMock(activeUrl));
     const page = await context.newPage();
     page.on('pageerror', e => { throw new Error('popup pageerror: ' + e.message); });
     await page.goto(POPUP_URL, { waitUntil: 'domcontentloaded' });
-    // Wait for popup init() to move the status badge past its pre-JS state
-    await page.waitForFunction(() => {
+    // The shot's REQUIRED state must be reached — a timeout here is a hard
+    // failure, never a shrug: publishing a popup stuck on the pre-JS
+    // 'Checking…' (or any unexpected state) would ship a broken screenshot.
+    await page.waitForFunction((pattern) => {
       const t = document.getElementById('statusBadgeText');
-      return t && t.textContent && t.textContent !== 'Checking…';
-    }, { timeout: 5000 }).catch(() => {});
+      return t && new RegExp(pattern).test((t.textContent || '').trim());
+    }, expectState.source, { timeout: 5000 }).catch(() => {
+      throw new Error(`${name}: popup never reached required state ${expectState} — refusing to capture`);
+    });
     if (typeof after === 'function') {
       await after(page);
     }

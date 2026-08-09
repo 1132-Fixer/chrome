@@ -87,7 +87,7 @@ Independent project. Not affiliated with, endorsed by, or sponsored by Zoom Vide
 
 ### Graphic assets
 
-Build them all with `npm run assets` (screenshot 4 is the branded trust card from `scripts/make-trust-card.js`; `npm run assets:details` can replace it with a real chrome://extensions Details capture), then upload from `store-assets/`:
+Build them all with `npm run assets` (screenshot 4 is optional: `node scripts/make-trust-card.js` produces the branded trust card — run manually and review against `ds-bundle/` before use, its styling is not yet design-system-aligned; `npm run assets:details` can replace it with a real chrome://extensions Details capture), then upload from `store-assets/`:
 
 | Slot                            | File                                             |
 | ------------------------------- | ------------------------------------------------ |
@@ -145,7 +145,7 @@ Chrome only exposes a cookie to an extension that holds host permission for the 
 
 ### Remote code
 
-Select **No, I am not using remote code.** Every script and style ships inside the package; the extension makes no network requests and uses no `eval` or `new Function`.
+Select **No, I am not using remote code.** Every script and style ships inside the package; the extension makes no network requests of its own and uses no `eval` or `new Function`.
 
 ### Data usage — leave all nine boxes unchecked
 

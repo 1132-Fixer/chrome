@@ -1,6 +1,6 @@
 # Chrome Web Store — listing copy, ready to paste
 
-Everything below is the finished text for the developer dashboard, matching the shipped **v1.2.0** manifest (`cookies` + `activeTab`, four Zoom host patterns, cookies-only clear).
+Everything below is the finished text for the developer dashboard, matching the shipped **v1.2.4** manifest (`cookies` + `activeTab`, four Zoom host patterns, cookies-only clear).
 
 Two notes before you start:
 
@@ -36,7 +36,7 @@ HOW IT WORKS
 
 Open zoom.us or zoom.com (any subdomain works) and click the 1132 Fixer icon. The popup shows the host it detected and a single FIX ZOOM button. Click it and the extension deletes every cookie Chrome holds for zoom.us and zoom.com, reloads the active Zoom tab, and tells you how many cookies it removed. That is the whole interface.
 
-On any other site, including chrome:// pages, the popup shows one line asking you to open a Zoom tab. No button appears, because there is nothing for it to do.
+On any other site, including chrome:// pages, the popup shows one line asking you to open a Zoom tab. The FIX ZOOM button does not appear, because there is nothing for it to do; only the footer links to the project website and issue page remain.
 
 COOKIES ONLY
 
@@ -47,7 +47,7 @@ It does not touch localStorage or sessionStorage, the Cache API, IndexedDB, serv
 WHAT IT DOES NOT DO
 
 - No data collection. No analytics. No telemetry.
-- No network requests of any kind. The extension never contacts any server, including ours.
+- No network requests of its own. The extension's code never contacts any server. The popup's two footer links (report an issue on GitHub, visit the project website) open a normal browser tab only when you click them, and the tab reload after a clear loads the Zoom page like any ordinary visit.
 - No remote code. Every script ships inside the package; nothing is fetched or evaluated at runtime.
 - No reading of your cookies. The extension deletes them and reports a count. Cookie names and values are never read into the interface, logged, or transmitted.
 - No automatic clearing. Opening the popup deletes nothing. Nothing runs on install, on startup, on page load, or on a timer.
@@ -87,7 +87,7 @@ Independent project. Not affiliated with, endorsed by, or sponsored by Zoom Vide
 
 ### Graphic assets
 
-Build them with `npm run assets` and `npm run assets:details`, then upload from `store-assets/`:
+Build them all with `npm run assets` (screenshot 4 is optional: `node scripts/make-trust-card.js` produces the branded trust card — run manually and review against `ds-bundle/` before use, its styling is not yet design-system-aligned; `npm run assets:details` can replace it with a real chrome://extensions Details capture), then upload from `store-assets/`:
 
 | Slot                            | File                                             |
 | ------------------------------- | ------------------------------------------------ |
@@ -130,7 +130,7 @@ The extension deletes cookies, so it needs the cookies permission to do its sing
 ### Permission justification — `activeTab`
 
 ```text
-The popup reads the active tab's URL when it opens, so it can tell whether the user is on a Zoom domain. On a Zoom tab it shows a FIX ZOOM button; anywhere else it shows no button at all, which prevents the user from clearing cookies from a page where that would be surprising. After a clear completes, the extension calls chrome.tabs.reload on that same tab so the signed-out state takes effect immediately. No content script is injected at install or page-load time, and page content is never read.
+The popup reads the active tab's URL when it opens, so it can tell whether the user is on a Zoom domain. On a Zoom tab it shows a FIX ZOOM button; anywhere else it shows no FIX ZOOM button, which prevents the user from clearing cookies from a page where that would be surprising. After a clear completes, the extension calls chrome.tabs.reload on that same tab so the signed-out state takes effect immediately. No content script is injected at install or page-load time, and page content is never read.
 ```
 
 ### Permission justification — host permissions
@@ -145,7 +145,7 @@ Chrome only exposes a cookie to an extension that holds host permission for the 
 
 ### Remote code
 
-Select **No, I am not using remote code.** Every script and style ships inside the package; the extension makes no network requests and uses no `eval` or `new Function`.
+Select **No, I am not using remote code.** Every script and style ships inside the package; the extension makes no network requests of its own and uses no `eval` or `new Function`.
 
 ### Data usage — leave all nine boxes unchecked
 
@@ -195,7 +195,7 @@ https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
 
 1. `npm test` — validator and e2e suites both green.
 2. `npm run assets && npm run assets:verify` — all seven graphics conform.
-3. `npm run package` — builds `store-assets/1132-fixer-chrome-1.2.0.zip`.
+3. `npm run package` — builds `store-assets/1132-fixer-chrome-<version>.zip` at the current manifest version.
 4. Walk the manual checklist in [README.md](README.md), on a signed-in Zoom session. Rows 6 and 7 (signed out after the clear, preferences survive) are the two that only a real session can prove.
 5. Optionally retake screenshot 2 during that walk, so it shows a real cookie count instead of the "No Zoom cookies were left to remove." state the mocked capture produces.
 6. Upload: **Actions → Publish to Chrome Web Store**, `mode=upload-draft`. Review the draft in the dashboard, then re-run with `upload-and-publish` when you are satisfied.

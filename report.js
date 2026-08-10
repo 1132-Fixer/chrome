@@ -194,11 +194,19 @@ if (IS_BROWSER) {
       if (screenshot) {
         payload.screenshot = { data: bytesToBase64(screenshot.bytes), mediaType: screenshot.mediaType };
       }
+      // Key derives from the submission content: a retry after an ambiguous
+      // failure (timeout after the server committed) replays the stored
+      // response instead of duplicating the case. Editing the report or the
+      // screenshot changes the body and therefore the key.
+      const bodyStr = JSON.stringify(payload);
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(bodyStr));
+      const idemKey = 'fx-' + Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 40);
       const post = (p) => serviceRequest('POST', '/v1/cases', {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + p.token,
-        'Idempotency-Key': crypto.randomUUID(),
-      }, JSON.stringify(payload));
+        'Idempotency-Key': idemKey,
+      }, bodyStr);
 
       let r = await post(principal);
       if (r.status === 401) {

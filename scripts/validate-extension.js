@@ -473,6 +473,7 @@ group('report helpers (sniffImageBytes / titleFrom / bytesToBase64)');
   (r.titleFrom('a  multi\nline   report about the bug') === 'a multi line report about the bug' ? pass : fail)('titleFrom collapses whitespace');
   (r.titleFrom('x'.repeat(200)).length === 80 ? pass : fail)('titleFrom caps at 80 chars');
   (r.titleFrom('   ') === 'Bug report' ? pass : fail)('titleFrom falls back on empty text');
+  (r.titleFrom('OK') === 'Bug report' ? pass : fail)('titleFrom falls back below the 3-char server minimum');
 }
 
 // --- 9. Summary ----------------------------------------------------------

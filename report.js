@@ -50,10 +50,13 @@ function bytesToBase64(u8) {
   return btoa(s);
 }
 
-/** Single-line title from the report text, matching the Windows app's rule. */
+/** Single-line title from the report text, matching the Windows app's rule.
+ * Falls back below the service's 3-char title minimum, not only on empty —
+ * otherwise the whole submission dies on a "title" error for a field the UI
+ * does not have. */
 function titleFrom(text) {
   const t = text.slice(0, 80).replace(/\s+/g, ' ').trim();
-  return t || 'Bug report';
+  return t.length >= 3 ? t : 'Bug report';
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -86,12 +89,14 @@ if (IS_BROWSER) {
   let screenshotUrl = null;  // preview object URL
   let shotReadGen = 0;       // invalidates in-flight async file reads
   let shotBusy = false;      // a read is in flight: submission must wait
+  let submitBusy = false;    // a POST is in flight: no second submission
 
   const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
   const normalizeMime = (t) => (t === 'image/jpg' ? 'image/jpeg' : t);
 
   function updateSubmit() {
-    els.submit.disabled = shotBusy || els.text.value.trim().length < MIN_TEXT_CHARS;
+    els.submit.disabled = submitBusy || shotBusy ||
+      els.text.value.trim().length < MIN_TEXT_CHARS;
   }
 
   function appVersion() {
@@ -120,6 +125,9 @@ if (IS_BROWSER) {
   }
 
   async function setScreenshot(fileOrBlob, name) {
+    // Reset the picker immediately: a rejected file must not leave its value
+    // behind, or re-selecting the same file later is a silent no-op.
+    els.shotInput.value = '';
     if (fileOrBlob.size > SHOT_MAX_BYTES) {
       setShotStatus('Screenshot must be 5 MB or smaller.', true);
       return;
@@ -152,6 +160,13 @@ if (IS_BROWSER) {
       els.shotPreview.hidden = false;
       els.shotRow.hidden = true;
       setShotStatus('');
+      // Hiding the attach row drops keyboard focus to <body>; hand it to the
+      // preview's Replace control when the user was on the attach path. A
+      // paste/drop while typing keeps focus where it was.
+      const active = document.activeElement;
+      if (active === document.body || active === els.shotAttach) {
+        els.shotReplace.focus();
+      }
     } finally {
       if (gen === shotReadGen) {
         shotBusy = false;
@@ -212,8 +227,10 @@ if (IS_BROWSER) {
   }
 
   async function submitReport() {
+    if (submitBusy) return; // typing must not re-arm the button mid-flight
     const text = els.text.value.trim();
-    els.submit.disabled = true;
+    submitBusy = true;
+    updateSubmit();
     setStatus(screenshot ? 'Submitting report + screenshot…' : 'Submitting…');
     try {
       let principal = loadPrincipal() || await registerPrincipal();
@@ -265,6 +282,7 @@ if (IS_BROWSER) {
     } catch (_) {
       setStatus('Network error — check your connection and try again.', 'err');
     } finally {
+      submitBusy = false;
       updateSubmit();
     }
   }
@@ -278,18 +296,27 @@ if (IS_BROWSER) {
     els.submit.addEventListener('click', submitReport);
     els.shotAttach.addEventListener('click', () => els.shotInput.click());
     els.shotReplace.addEventListener('click', () => els.shotInput.click());
-    els.shotRemove.addEventListener('click', clearScreenshot);
+    els.shotRemove.addEventListener('click', () => {
+      clearScreenshot();
+      // Removing hides the focused button; keep keyboard users in the flow.
+      els.shotAttach.focus();
+    });
     els.shotInput.addEventListener('change', (e) => {
       const f = e.target.files && e.target.files[0];
       if (f) setScreenshot(f, f.name);
     });
 
-    ['dragover', 'dragenter'].forEach((ev) => els.form.addEventListener(ev, (e) => {
-      e.preventDefault();
-      els.shotRow.classList.add('report-drag');
+    // A file dropped ANYWHERE on this page must never navigate the tab away
+    // (destroying the typed report). Text drags keep default behavior.
+    const dragHasFile = (e) =>
+      e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+    ['dragover', 'drop'].forEach((ev) => document.addEventListener(ev, (e) => {
+      if (dragHasFile(e)) e.preventDefault();
     }));
-    ['dragleave', 'drop'].forEach((ev) => els.form.addEventListener(ev, (e) => {
-      if (ev === 'drop') e.preventDefault();
+    ['dragover', 'dragenter'].forEach((ev) => els.form.addEventListener(ev, (e) => {
+      if (dragHasFile(e)) els.shotRow.classList.add('report-drag');
+    }));
+    ['dragleave', 'drop'].forEach((ev) => els.form.addEventListener(ev, () => {
       els.shotRow.classList.remove('report-drag');
     }));
     els.form.addEventListener('drop', (e) => {

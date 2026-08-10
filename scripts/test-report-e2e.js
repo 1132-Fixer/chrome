@@ -133,19 +133,23 @@ async function withReportPage(cfg, fn) {
       'The fix button does nothing on us02web.zoom.us — the popup opens, I click, nothing happens.');
     check(!(await page.locator('#bugSubmit').isDisabled()), '50+ chars enables submit');
 
+    // The magic-byte rejection lands after an async file read — always await
+    // the status text rather than reading it immediately (flaky otherwise).
+    const shotStatusShows = (want) => page.waitForFunction(
+      (w) => (document.getElementById('shotStatus').textContent || '').includes(w),
+      want, { timeout: 5000 }).then(() => true, () => false);
+
     // Wrong type: PNG-named text file must be rejected by magic bytes.
     await page.setInputFiles('#shotInput', {
       name: 'notes-renamed.png', mimeType: 'image/png', buffer: Buffer.from('just some text'),
     });
-    const wrongType = await page.locator('#shotStatus').textContent();
-    check(wrongType.includes('Only image files'), 'renamed text file rejected by content', wrongType);
+    check(await shotStatusShows('Only image files'), 'renamed text file rejected by content');
 
     // Declared-MIME gate: real PNG bytes declared as a non-image type.
     await page.setInputFiles('#shotInput', {
       name: 'shot.png', mimeType: 'text/plain', buffer: TINY_PNG,
     });
-    const wrongMime = await page.locator('#shotStatus').textContent();
-    check(wrongMime.includes('Only image files'), 'non-image declared MIME rejected', wrongMime);
+    check(await shotStatusShows('Only image files'), 'non-image declared MIME rejected');
 
     // Real PNG attaches and previews.
     await page.setInputFiles('#shotInput', {
@@ -192,10 +196,14 @@ async function withReportPage(cfg, fn) {
     const big = Buffer.alloc(5 * 1024 * 1024 + 1);
     TINY_PNG.copy(big, 0);
     await page.setInputFiles('#shotInput', { name: 'huge.png', mimeType: 'image/png', buffer: big });
-    const msg = await page.locator('#shotStatus').textContent();
-    check(msg.includes('5 MB'), 'oversized rejected with the truthful limit', msg);
+    const shown = await page.waitForFunction(
+      () => (document.getElementById('shotStatus').textContent || '').includes('5 MB'),
+      undefined, { timeout: 5000 }).then(() => true, () => false);
+    check(shown, 'oversized rejected with the truthful limit');
     const hidden = await page.evaluate(() => document.getElementById('shotPreview').hidden);
     check(hidden === true, 'no preview for a rejected file');
+    const inputCleared = await page.evaluate(() => document.getElementById('shotInput').value === '');
+    check(inputCleared, 'rejected file clears the picker (same file can be re-selected)');
   });
 
   console.log('');

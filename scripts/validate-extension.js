@@ -360,7 +360,122 @@ if (!initBodyMatch) {
   else                                          pass('popup.js init() does NOT reload the tab');
 }
 
-// --- 8. Summary ----------------------------------------------------------
+// --- 8. Report-a-Bug page (#16) ------------------------------------------
+// The report page is the ONE place this extension may talk to the network,
+// and only to the support service, only user-initiated. The popup invariants
+// above are untouched: popup.js stays fetch-free, one button, no fields.
+group('report page (the only networked surface, support-service-only)');
+
+for (const f of ['report.html', 'report.css', 'report.js']) {
+  if (exists(f)) pass(`${f} exists`); else fail(`${f} exists`);
+}
+const reportHtml = readText('report.html');
+const reportJsSrc = readText('report.js');
+
+// Same packaging gate the popup assets get.
+{
+  const entriesMatch2 = packagerSrc.match(/const ENTRIES = \[([\s\S]*?)\];/);
+  const entries2 = entriesMatch2
+    ? new Set([...entriesMatch2[1].matchAll(/'([^']+)'/g)].map(m => m[1]))
+    : new Set();
+  for (const f of ['report.html', 'report.css', 'report.js']) {
+    if (entries2.has(f)) pass(`report asset is packaged: ${f}`);
+    else fail(`report asset is packaged: ${f}`, 'missing from package-extension.js ENTRIES');
+  }
+}
+
+// MV3 CSP hygiene, same as the popup.
+if (/<script(?![^>]*\bsrc=)/i.test(reportHtml)) fail('report.html has no inline <script>');
+else pass('report.html has no inline <script>');
+if (/\son[a-z]+\s*=\s*["']/i.test(reportHtml)) fail('report.html has no inline event handler attributes');
+else pass('report.html has no inline event handler attributes');
+
+// The popup stays network-free — the feature must not leak fetch into it.
+if (/\bfetch\s*\(/.test(popupJsCode)) fail('popup.js still contains no fetch(');
+else pass('popup.js still contains no fetch(');
+if (/\blocalStorage\b/.test(popupJsCode)) fail('popup.js still never touches localStorage');
+else pass('popup.js still never touches localStorage');
+
+// report.js may fetch, but every URL it can reach is pinned to the support
+// service; analytics/remote-code stay banned everywhere.
+const reportJsCode = reportJsSrc
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')
+  .split('\n')
+  .filter(line => !/^\s*\/\//.test(line))
+  .join('\n');
+for (const { re, name } of [
+  { re: /\bXMLHttpRequest\b/, name: 'XMLHttpRequest' },
+  { re: /\bWebSocket\b/, name: 'WebSocket' },
+  { re: /\bnavigator\.sendBeacon\b/, name: 'sendBeacon' },
+  { re: /\beval\s*\(/, name: 'eval(' },
+  { re: /\bnew\s+Function\s*\(/, name: 'new Function(' },
+  { re: /\b(gtag|googletag|ga\(|amplitude|mixpanel|segment\.io|sentry\.io|posthog|hotjar)\b/i, name: 'analytics/telemetry' },
+]) {
+  if (re.test(reportJsCode)) fail(`report.js contains forbidden token: ${name}`);
+  else pass(`report.js contains no ${name}`);
+}
+{
+  const SUPPORT_ORIGIN_RE = /^https:\/\/1132-fixer-feedback-proxy-production\.up\.railway\.app$/;
+  const urls = reportJsCode.match(/https?:\/\/[^\s"'`)]+/gi) || [];
+  const bad = urls.filter(u => !SUPPORT_ORIGIN_RE.test(u));
+  if (bad.length === 0) pass('report.js network origin is pinned to the support service');
+  else fail('report.js network origin is pinned to the support service', bad.join(', '));
+  if (/const SUPPORT_ORIGIN = 'https:\/\//.test(reportJsSrc)) pass('SUPPORT_ORIGIN is a single https literal');
+  else fail('SUPPORT_ORIGIN is a single https literal');
+  const fetchSites = [...reportJsCode.matchAll(/\bfetch\s*\(\s*([^,)]+)/g)].map(m => m[1].trim());
+  if (fetchSites.length > 0 && fetchSites.every(s => s.startsWith('SUPPORT_ORIGIN'))) {
+    pass('every fetch() call goes through SUPPORT_ORIGIN');
+  } else {
+    fail('every fetch() call goes through SUPPORT_ORIGIN', fetchSites.join(' | ') || 'no fetch found');
+  }
+}
+{
+  const htmlUrls = (reportHtml.match(/https?:\/\/[^\s"')]+/gi) || []).filter(u =>
+    !['https://1132-fixer.xyz/', 'https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new'].includes(u));
+  if (htmlUrls.length === 0) pass('report.html carries only the two static links');
+  else fail('report.html carries only the two static links', htmlUrls.join(', '));
+}
+// localStorage in report.js is allowed for exactly one key: the support
+// principal this install mints for itself.
+{
+  const lsCalls = [...reportJsCode.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*([^),]+)/g)]
+    .map(m => m[1].trim());
+  if (lsCalls.length > 0 && lsCalls.every(a => a === 'PRINCIPAL_KEY')) {
+    pass('report.js localStorage use is limited to PRINCIPAL_KEY');
+  } else {
+    fail('report.js localStorage use is limited to PRINCIPAL_KEY', lsCalls.join(', ') || 'none found');
+  }
+}
+
+// The popup's Feedback & Report link now opens the report page.
+if (/href="report\.html"/.test(popupHtml)) pass('popup footer links to report.html');
+else fail('popup footer links to report.html');
+
+// Unit checks on the report page's pure helpers.
+group('report helpers (sniffImageBytes / titleFrom / bytesToBase64)');
+{
+  const r = require(path.join(ROOT, 'report.js'));
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  const sniffCases = [
+    { input: new Uint8Array(png), expect: 'image/png' },
+    { input: new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]), expect: 'image/jpeg' },
+    { input: new Uint8Array(Buffer.concat([Buffer.from('GIF89a'), Buffer.alloc(8)])), expect: 'image/gif' },
+    { input: new Uint8Array(Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WEBP'), Buffer.alloc(4)])), expect: 'image/webp' },
+    { input: new Uint8Array(Buffer.concat([Buffer.from('MZ'), Buffer.alloc(20)])), expect: null },
+    { input: new Uint8Array(3), expect: null },
+  ];
+  for (const c of sniffCases) {
+    const got = r.sniffImageBytes(c.input);
+    (got === c.expect ? pass : fail)(`sniffImageBytes -> ${JSON.stringify(c.expect)}`, `got ${JSON.stringify(got)}`);
+  }
+  const rt = Buffer.from(r.bytesToBase64(new Uint8Array(png)), 'base64');
+  (rt.equals(png) ? pass : fail)('bytesToBase64 round-trips byte-exact');
+  (r.titleFrom('a  multi\nline   report about the bug') === 'a multi line report about the bug' ? pass : fail)('titleFrom collapses whitespace');
+  (r.titleFrom('x'.repeat(200)).length === 80 ? pass : fail)('titleFrom caps at 80 chars');
+  (r.titleFrom('   ') === 'Bug report' ? pass : fail)('titleFrom falls back on empty text');
+}
+
+// --- 9. Summary ----------------------------------------------------------
 console.log('');
 console.log(`Passed: ${passed}  Failed: ${failed}`);
 process.exit(failed > 0 ? 1 : 0);

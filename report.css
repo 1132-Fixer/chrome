@@ -1,0 +1,105 @@
+/* Report-a-bug page (#16). Inherits every token from popup.css; this file
+   only widens the layout for a full tab and styles the form. [hidden] must
+   beat any class display rule. */
+
+html, body.report-body { width: auto; }
+body.report-body {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+[hidden] { display: none !important; }
+
+.report-main { padding: 8px 20px 20px; }
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.report-copy { color: var(--text-dim); font-size: 13px; line-height: 1.5; margin: 0 0 10px; }
+.report-checking { text-align: center; padding: 12px 0; }
+
+.report-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.report-textarea {
+  width: 100%;
+  min-height: 120px;
+  box-sizing: border-box;
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+.report-textarea:focus { outline: none; border-color: var(--border-hi); }
+
+.report-attach { margin-bottom: 12px; }
+.report-attach-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.report-attach-row.report-drag { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: var(--radius-btn); }
+.report-hint { font-size: 11.5px; color: var(--text-dim); }
+
+.report-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface-elev);
+  padding: 10px;
+}
+.report-preview img {
+  max-width: 140px;
+  max-height: 90px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  object-fit: contain;
+  background: var(--bg-0);
+}
+.report-preview-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.report-shot-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-btn {
+  min-height: 36px;
+  padding: 8px 16px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background: var(--surface-elev);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.report-btn:hover { border-color: var(--border-hi); }
+.report-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.report-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.report-btn-submit { background: var(--accent); border-color: transparent; color: #fff; padding: 10px 22px; }
+.report-btn-submit:hover { background: var(--accent-hover); }
+.report-btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.report-status { font-size: 12px; min-height: 16px; margin-top: 8px; }
+.report-status.ok { color: var(--green-500); font-weight: 600; }
+.report-status.err { color: var(--red-500); font-weight: 600; }

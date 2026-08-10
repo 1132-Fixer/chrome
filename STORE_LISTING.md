@@ -47,12 +47,12 @@ It does not touch localStorage or sessionStorage, the Cache API, IndexedDB, serv
 WHAT IT DOES NOT DO
 
 - No data collection. No analytics. No telemetry.
-- No network requests of its own. The extension's code never contacts any server. The popup's two footer links (report an issue on GitHub, visit the project website) open a normal browser tab only when you click them, and the tab reload after a clear loads the Zoom page like any ordinary visit.
+- No network requests from the fix flow or the popup. The popup's code never contacts any server; its footer links open a normal browser tab only when you click them, and the tab reload after a clear loads the Zoom page like any ordinary visit. The only networked surface is the optional Report-a-Bug page: opening it asks our support service once whether reporting is available (no user data), and it transmits your report — description, optional screenshot, extension version, browser user-agent — only when you press Submit.
 - No remote code. Every script ships inside the package; nothing is fetched or evaluated at runtime.
 - No reading of your cookies. The extension deletes them and reports a count. Cookie names and values are never read into the interface, logged, or transmitted.
 - No automatic clearing. Opening the popup deletes nothing. Nothing runs on install, on startup, on page load, or on a timer.
 - No access to non-Zoom sites. Chrome enforces this, not just our code.
-- No account, no sign-in, no identifier.
+- No account, no sign-in. Submitting a bug report mints a random per-install support reference so staff replies can be matched to your install; it identifies no person, is stored only on your machine, and is never used for tracking.
 
 PERMISSIONS, IN PLAIN ENGLISH
 

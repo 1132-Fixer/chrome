@@ -84,6 +84,15 @@ if (IS_BROWSER) {
 
   let screenshot = null;     // { bytes: Uint8Array, mediaType, name }
   let screenshotUrl = null;  // preview object URL
+  let shotReadGen = 0;       // invalidates in-flight async file reads
+  let shotBusy = false;      // a read is in flight: submission must wait
+
+  const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
+  const normalizeMime = (t) => (t === 'image/jpg' ? 'image/jpeg' : t);
+
+  function updateSubmit() {
+    els.submit.disabled = shotBusy || els.text.value.trim().length < MIN_TEXT_CHARS;
+  }
 
   function appVersion() {
     try { return chrome.runtime.getManifest().version; } catch (_) { return '0.0.0'; }
@@ -99,12 +108,15 @@ if (IS_BROWSER) {
   }
 
   function clearScreenshot() {
+    shotReadGen++; // a queued async read completion must not resurrect state
+    shotBusy = false;
     screenshot = null;
     if (screenshotUrl) { URL.revokeObjectURL(screenshotUrl); screenshotUrl = null; }
     els.shotPreview.hidden = true;
     els.shotRow.hidden = false;
     els.shotInput.value = '';
     setShotStatus('');
+    updateSubmit();
   }
 
   async function setScreenshot(fileOrBlob, name) {
@@ -112,26 +124,51 @@ if (IS_BROWSER) {
       setShotStatus('Screenshot must be 5 MB or smaller.', true);
       return;
     }
-    const bytes = new Uint8Array(await fileOrBlob.arrayBuffer());
-    const mediaType = sniffImageBytes(bytes);
-    if (!mediaType) {
+    // Declared MIME gate (spec: MIME + magic bytes). An empty type (some
+    // drag/paste sources) falls through to the sniff, which stays decisive.
+    const declared = normalizeMime((fileOrBlob.type || '').toLowerCase());
+    if (declared && !ALLOWED_MIME.has(declared)) {
       setShotStatus('Only image files can be attached (PNG, JPEG, WebP, or GIF).', true);
       return;
     }
-    if (screenshotUrl) URL.revokeObjectURL(screenshotUrl);
-    screenshot = { bytes, mediaType, name: name || 'screenshot' };
-    screenshotUrl = URL.createObjectURL(new Blob([bytes], { type: mediaType }));
-    els.shotImg.src = screenshotUrl;
-    els.shotName.textContent = screenshot.name;
-    els.shotPreview.hidden = false;
-    els.shotRow.hidden = true;
-    setShotStatus('');
+    // Submission must not observe half-updated state: block Submit while the
+    // read is in flight, and discard a completion the user has superseded.
+    const gen = ++shotReadGen;
+    shotBusy = true;
+    updateSubmit();
+    try {
+      const bytes = new Uint8Array(await fileOrBlob.arrayBuffer());
+      if (gen !== shotReadGen) return; // replaced or cleared mid-read
+      const mediaType = sniffImageBytes(bytes);
+      if (!mediaType || (declared && declared !== mediaType)) {
+        setShotStatus('Only image files can be attached (PNG, JPEG, WebP, or GIF).', true);
+        return;
+      }
+      if (screenshotUrl) URL.revokeObjectURL(screenshotUrl);
+      screenshot = { bytes, mediaType, name: name || 'screenshot' };
+      screenshotUrl = URL.createObjectURL(new Blob([bytes], { type: mediaType }));
+      els.shotImg.src = screenshotUrl;
+      els.shotName.textContent = screenshot.name;
+      els.shotPreview.hidden = false;
+      els.shotRow.hidden = true;
+      setShotStatus('');
+    } finally {
+      if (gen === shotReadGen) {
+        shotBusy = false;
+        updateSubmit();
+      }
+    }
   }
 
   // --- support-service client ----------------------------------------
 
-  async function serviceRequest(method, path, headers, body) {
-    const r = await fetch(SUPPORT_ORIGIN + path, { method, headers, body });
+  async function serviceRequest(method, path, headers, body, timeoutMs) {
+    // Application-level bound: a stalled connection must resolve into the
+    // honest failure path, never park the page on a spinner or a disabled
+    // Submit for the browser's own multi-minute timeout.
+    const r = await fetch(SUPPORT_ORIGIN + path, {
+      method, headers, body, signal: AbortSignal.timeout(timeoutMs || 30000),
+    });
     let json = null;
     try { json = await r.json(); } catch (_) { /* non-JSON body */ }
     return { status: r.status, json };
@@ -139,10 +176,10 @@ if (IS_BROWSER) {
 
   async function capabilityProbe() {
     try {
-      const r = await serviceRequest('GET', '/health');
+      const r = await serviceRequest('GET', '/health', undefined, undefined, 8000);
       return Boolean(r.json && r.json.capabilities && r.json.capabilities.screenshots);
     } catch (_) {
-      return false; // unreachable or CORS-dark -> fallback view
+      return false; // unreachable, stalled, or CORS-dark -> fallback view
     }
   }
 
@@ -228,7 +265,7 @@ if (IS_BROWSER) {
     } catch (_) {
       setStatus('Network error — check your connection and try again.', 'err');
     } finally {
-      els.submit.disabled = els.text.value.trim().length < MIN_TEXT_CHARS;
+      updateSubmit();
     }
   }
 
@@ -237,9 +274,7 @@ if (IS_BROWSER) {
   async function init() {
     els.version.textContent = 'v' + appVersion();
 
-    els.text.addEventListener('input', () => {
-      els.submit.disabled = els.text.value.trim().length < MIN_TEXT_CHARS;
-    });
+    els.text.addEventListener('input', updateSubmit);
     els.submit.addEventListener('click', submitReport);
     els.shotAttach.addEventListener('click', () => els.shotInput.click());
     els.shotReplace.addEventListener('click', () => els.shotInput.click());

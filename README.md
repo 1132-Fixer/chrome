@@ -94,7 +94,7 @@ The extension does not request `<all_urls>`, `browsingData`, `history`, or `scri
 
 ## Current support status
 
-The current **Feedback & Report** link opens GitHub. A new private support inbox and verified live rating system are being built. They are not part of the current extension yet.
+The **Feedback & Report** link opens the extension's own Report-a-Bug page. While the support service is being activated, that page shows a GitHub-issues link; once the service is live it offers an in-extension bug-report form with an optional screenshot attachment (see `PRIVACY_POLICY.md` — "Bug reports"). The verified live rating system is still being built and is not part of the extension yet.
 
 <details>
 <summary><strong>For developers</strong></summary>

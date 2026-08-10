@@ -140,6 +140,13 @@ async function withReportPage(cfg, fn) {
     const wrongType = await page.locator('#shotStatus').textContent();
     check(wrongType.includes('Only image files'), 'renamed text file rejected by content', wrongType);
 
+    // Declared-MIME gate: real PNG bytes declared as a non-image type.
+    await page.setInputFiles('#shotInput', {
+      name: 'shot.png', mimeType: 'text/plain', buffer: TINY_PNG,
+    });
+    const wrongMime = await page.locator('#shotStatus').textContent();
+    check(wrongMime.includes('Only image files'), 'non-image declared MIME rejected', wrongMime);
+
     // Real PNG attaches and previews.
     await page.setInputFiles('#shotInput', {
       name: 'error.png', mimeType: 'image/png', buffer: TINY_PNG,

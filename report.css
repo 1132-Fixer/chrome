@@ -51,7 +51,7 @@ body.report-body {
 .report-attach { margin-bottom: 12px; }
 .report-attach-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .report-attach-row.report-drag { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: var(--radius-btn); }
-.report-hint { font-size: 11.5px; color: var(--text-dim); }
+.report-hint { font-size: 12px; color: var(--text-dim); } /* ds-bundle 12px minimum */
 
 .report-preview {
   display: flex;

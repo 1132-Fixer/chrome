@@ -15,7 +15,7 @@ This is the privacy policy for the **1132 Fixer** Chrome extension distributed v
 
 **The fix flow does not collect, transmit, sell, share, or store any personal data.** It deletes **cookies for Zoom domains only** (`zoom.us` and `zoom.com`, including subdomains), only after the user clicks **FIX ZOOM** in the popup, and only inside the user's own browser.
 
-**Bug reports are optional and entirely user-initiated.** The separate Report-a-Bug page (opened from the popup's "Feedback & Report" link) sends **only what you type and attach** — your description, an optional screenshot you choose, the extension version, and your browser's user-agent string — to the 1132 Fixer support service, and **only when you press Submit**. Nothing on that page is sent in the background; see the dedicated section below.
+**Bug reports are optional and entirely user-initiated.** The separate Report-a-Bug page (opened from the popup's "Feedback & Report" link) sends **only what you type and attach** — your description, an optional screenshot you choose, the extension version, and your browser's user-agent string — to the 1132 Fixer support service, and it sends that report **only when you press Submit**. The one thing the page does on its own is a single availability check when it opens (`GET /health`, carrying **no user data**) to decide whether to show the form or a GitHub fallback link; see the dedicated section below.
 
 ## What the extension does
 

@@ -32,3 +32,6 @@ jobs:
 
       - name: Popup end-to-end behaviour tests
         run: node scripts/test-popup-e2e.js
+
+      - name: Report-page end-to-end behaviour tests
+        run: node scripts/test-report-e2e.js

@@ -20,7 +20,12 @@ Every permission below maps directly to this single purpose. The extension does 
 
 ## Privacy disclosure draft
 
-- **Personally identifiable information:** none collected.
+The per-category answers below describe the popup and fix flow. A release
+that includes the Report-a-Bug page changes two of them — see the
+Privacy Practices paragraph after the list for the reconciled answers
+(user-provided text/screenshots, transmitted only on Submit).
+
+- **Personally identifiable information:** none collected by the fix flow. A bug report may contain whatever the user chooses to type or attach — user-provided, sent only on Submit.
 - **Health information:** none collected.
 - **Financial and payment information:** none collected.
 - **Authentication information:** none collected. Cookies are **deleted**, not read.
@@ -30,9 +35,9 @@ Every permission below maps directly to this single purpose. The extension does 
 - **User activity:** none collected.
 - **Website content:** never read. The extension runs no content scripts and injects no script at all — the `scripting` permission was dropped in v1.2.0.
 - **Remote code use:** none. No remote scripts, styles, fonts, or images. All assets ship in the package.
-- **Data transmission:** the extension makes zero network requests.
+- **Data transmission:** the popup and fix flow make zero network requests. The optional Report-a-Bug page contacts exactly one origin (the project's support service): an availability check with no user data when the page opens, and — only when the user presses Submit — the bug description, an optional user-chosen screenshot, the extension version, and the browser user-agent string.
 
-Tick *I do not collect or transmit user data* in the Privacy Practices form.
+Privacy Practices form for any release that includes the Report-a-Bug page: declare **user-provided data** ("Personally identifiable information: potentially, user-authored text/screenshots" is user-controlled; "Website content: no; collected only what the user types/attaches") transmitted for app functionality (support), not sold, not used for unrelated purposes. *I do not collect or transmit user data* is NO LONGER tickable once this feature ships — answer the questionnaire per the PRIVACY_POLICY.md "Bug reports" section.
 
 ## Packaging command
 
@@ -274,8 +279,14 @@ Permission justifications (paste each verbatim into the matching field):
 
 Privacy policy URL: https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
 
-Data usage — leave ALL nine checkboxes UNCHECKED:
-    Personally identifiable information ... NOT collected
+Data usage — FOR A RELEASE WITHOUT the Report-a-Bug page, leave ALL nine
+checkboxes UNCHECKED. FOR ANY RELEASE THAT INCLUDES the Report-a-Bug page,
+check "Personally identifiable information" (user-authored report text and
+screenshots may contain it; user-provided, sent only on Submit, used solely
+for support) and answer per the Privacy Practices paragraph in the
+"Privacy disclosure draft" section above — the other categories stay
+unchecked:
+    Personally identifiable information ... user-provided bug reports ONLY (see above)
     Health information ......................... NOT collected
     Financial and payment information .......... NOT collected
     Authentication information ................. NOT collected

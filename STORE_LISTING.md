@@ -51,7 +51,7 @@ WHAT IT DOES NOT DO
 - No remote code. Every script ships inside the package; nothing is fetched or evaluated at runtime.
 - No reading of your cookies. The extension deletes them and reports a count. Cookie names and values are never read into the interface, logged, or transmitted.
 - No automatic clearing. Opening the popup deletes nothing. Nothing runs on install, on startup, on page load, or on a timer.
-- No access to non-Zoom sites. Chrome enforces this, not just our code.
+- No host permissions beyond Zoom, and no reading of any non-Zoom page. Chrome enforces the permission boundary, not just our code. The one non-Zoom connection the extension can make is the Report-a-Bug page's request to the project's own support service, described above — user-initiated, never page data.
 - No account, no sign-in. Submitting a bug report mints a random per-install support reference so staff replies can be matched to your install; it identifies no person, is stored only on your machine, and is never used for tracking.
 
 PERMISSIONS, IN PLAIN ENGLISH

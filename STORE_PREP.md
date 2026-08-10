@@ -20,7 +20,12 @@ Every permission below maps directly to this single purpose. The extension does 
 
 ## Privacy disclosure draft
 
-- **Personally identifiable information:** none collected.
+The per-category answers below describe the popup and fix flow. A release
+that includes the Report-a-Bug page changes two of them — see the
+Privacy Practices paragraph after the list for the reconciled answers
+(user-provided text/screenshots, transmitted only on Submit).
+
+- **Personally identifiable information:** none collected by the fix flow. A bug report may contain whatever the user chooses to type or attach — user-provided, sent only on Submit.
 - **Health information:** none collected.
 - **Financial and payment information:** none collected.
 - **Authentication information:** none collected. Cookies are **deleted**, not read.
@@ -274,8 +279,14 @@ Permission justifications (paste each verbatim into the matching field):
 
 Privacy policy URL: https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
 
-Data usage — leave ALL nine checkboxes UNCHECKED:
-    Personally identifiable information ... NOT collected
+Data usage — FOR A RELEASE WITHOUT the Report-a-Bug page, leave ALL nine
+checkboxes UNCHECKED. FOR ANY RELEASE THAT INCLUDES the Report-a-Bug page,
+check "Personally identifiable information" (user-authored report text and
+screenshots may contain it; user-provided, sent only on Submit, used solely
+for support) and answer per the Privacy Practices paragraph in the
+"Privacy disclosure draft" section above — the other categories stay
+unchecked:
+    Personally identifiable information ... user-provided bug reports ONLY (see above)
     Health information ......................... NOT collected
     Financial and payment information .......... NOT collected
     Authentication information ................. NOT collected

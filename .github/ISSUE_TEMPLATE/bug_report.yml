@@ -1,0 +1,48 @@
+name: Bug report
+description: Something in the extension does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Never paste cookie values or tokens** — the
+        extension never shows them, and we never need them.
+
+        Security issue? Do not file it here — see
+        [SECURITY.md](../blob/master/SECURITY.md) for private reporting.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, and what did the extension do?
+      placeholder: Pressed FIX ZOOM on us02web.zoom.us and …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      description: Shown as the small badge at the top of the popup.
+      placeholder: v1.2.5
+    validations:
+      required: true
+  - type: input
+    id: chrome-version
+    attributes:
+      label: Chrome version
+      description: From chrome://settings/help.
+      placeholder: "139.0.7258.67"
+    validations:
+      required: true
+  - type: input
+    id: zoom-host
+    attributes:
+      label: Zoom host (domain only)
+      description: The domain in the address bar — never the full URL of a meeting link.
+      placeholder: us02web.zoom.us

@@ -69,7 +69,7 @@ GOOD TO KNOW
 
 SOURCE CODE
 
-Source code is public under the MIT license: https://github.com/1132-Fixer/1132-Fixer-Chrome
+Source code is public under the MIT license: https://github.com/1132-Fixer/chrome
 
 The repository ships its own checks, including a validator that fails the build if a broader permission or a non-cookie clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
 
@@ -172,7 +172,7 @@ Then tick *I do not collect or transmit user data*.
 ### Privacy policy URL
 
 ```text
-https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
+https://1132-fixer.github.io/chrome/privacy.html
 ```
 
 ---

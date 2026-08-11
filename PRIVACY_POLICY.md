@@ -9,7 +9,7 @@ permalink: /privacy.html
 
 *Last updated: 2026-08-10.*
 
-This is the privacy policy for the **1132 Fixer** Chrome extension distributed via the Chrome Web Store and hosted at <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>. This document is the canonical source and is also published at <https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html>.
+This is the privacy policy for the **1132 Fixer** Chrome extension distributed via the Chrome Web Store and hosted at <https://github.com/1132-Fixer/chrome>. This document is the canonical source and is also published at <https://1132-fixer.github.io/chrome/privacy.html>.
 
 ## Summary
 
@@ -87,9 +87,9 @@ If extension behavior changes in a way that affects this policy, this document w
 ## Contact
 
 - **Owner:** `1132 Fixer` — published by PrimeUpYourLife.
-- **Support / privacy questions:** open an issue at <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues> — this is the canonical public contact point for this extension.
-- **Repository:** <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
-- **Hosted privacy URL:** <https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html>.
+- **Support / privacy questions:** open an issue at <https://github.com/1132-Fixer/chrome/issues> — this is the canonical public contact point for this extension.
+- **Repository:** <https://github.com/1132-Fixer/chrome>.
+- **Hosted privacy URL:** <https://1132-fixer.github.io/chrome/privacy.html>.
 
 ## Verifiability
 

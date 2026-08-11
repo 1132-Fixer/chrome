@@ -11,7 +11,7 @@ permalink: /
   <div class="cta-card">
     <h3>Install</h3>
     <p>Load the latest unpacked build or grab it from the Chrome Web Store once review completes.</p>
-    <a class="btn" href="https://github.com/PrimeUpYourLife/1132-Fixer-Chrome#install-unpacked-for-development">Get the extension</a>
+    <a class="btn" href="https://github.com/1132-Fixer/chrome#install-unpacked-for-development">Get the extension</a>
   </div>
   <div class="cta-card">
     <h3>Privacy</h3>
@@ -51,7 +51,7 @@ There is no `browsingData` permission and no `scripting` permission — they wer
 ## Where to go next
 
 - **Privacy:** [Full privacy policy](./privacy.html)
-- **Source:** [github.com/PrimeUpYourLife/1132-Fixer-Chrome](https://github.com/PrimeUpYourLife/1132-Fixer-Chrome)
+- **Source:** [github.com/1132-Fixer/chrome](https://github.com/1132-Fixer/chrome)
 - **Windows sibling:** [github.com/PrimeUpYourLife/1132-Fixer-Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows)
 - **License:** MIT
 - *Independent project. Not affiliated with Zoom Video Communications, Inc.*

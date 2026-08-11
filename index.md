@@ -1,7 +1,7 @@
 ---
 layout: default
 title: 1132 Fixer for Chrome
-description: One-click Zoom cookie cleaner for Zoom error 1132. Cookies only. Zoom-only host permissions. MV3. User-triggered. No telemetry. No remote code.
+description: Clear Zoom site data in Chrome with one guided action. Cookies only. Zoom-only host permissions. MV3. User-triggered. No telemetry. No remote code.
 hero_title: Fix Zoom 1132 in one click.
 hero_sub: 1132 Fixer is a one-button Chrome extension that deletes cookies for zoom.us and zoom.com, then reloads the active Zoom tab. Cookies only — your storage, cache and IndexedDB are left alone. Zoom-only host access. Everything runs locally in your browser. No accounts. No telemetry. No remote code.
 permalink: /

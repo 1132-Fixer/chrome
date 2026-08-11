@@ -33,7 +33,7 @@ Link `styles.css`. Set the page/container background to the ink gradient and def
 - State is a `.status-badge` pill (`.scanning` amber, `.done` green, `.error` red, `.neutral` grey) with an 8px `.status-dot`.
 - Amber is WARNING only; blue is exclusively the action button; green/red are outcomes only.
 - The footer is a plain one-row bar: `Feedback & Report` + `Visit Website`. The hazard bar is retired.
-- The product descriptor line is the locked tagline: `One-click fix for Zoom Error 1132`.
+- The product descriptor line is the canonical product tagline: `A focused browser cleanup for Zoom error 1132.`
 - Labels are UPPERCASE, small (10–11px), wide-tracked.
 
 ## Truth

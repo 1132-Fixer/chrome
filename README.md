@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/social-preview.png" alt="1132 Fixer for Chrome — One-click fix for Zoom Error 1132" width="960">
+  <img src="assets/social-preview.png" alt="1132 Fixer for Chrome — A focused browser cleanup for Zoom error 1132" width="960">
 </p>
 
 <h1 align="center">1132 Fixer for Chrome</h1>
 
 <p align="center">
-  <strong>One-click fix for Zoom Error 1132.</strong><br>
+  <strong>A focused browser cleanup for Zoom error 1132.</strong><br>
   Clears Zoom cookies, then reloads the current Zoom tab.
 </p>
 

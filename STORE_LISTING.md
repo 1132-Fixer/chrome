@@ -1,6 +1,6 @@
 # Chrome Web Store — listing copy, ready to paste
 
-Everything below is the finished text for the developer dashboard, matching the shipped **v1.2.4** manifest (`cookies` + `activeTab`, four Zoom host patterns, cookies-only clear).
+Everything below is the finished text for the developer dashboard, matching the repository's **v1.2.5** manifest (`cookies` + `activeTab`, four Zoom host patterns, cookies-only clear).
 
 Two notes before you start:
 
@@ -24,7 +24,7 @@ Dashboard: <https://chrome.google.com/webstore/devconsole>
 The store pre-fills this from the manifest description; replace it with this so the wording matches the listing body.
 
 ```text
-One-click Zoom cookie cleaner. Deletes zoom.us and zoom.com cookies, then reloads the tab, to clear Zoom error 1132.
+Clear Zoom site data in Chrome with one guided action.
 ```
 
 ### Detailed description

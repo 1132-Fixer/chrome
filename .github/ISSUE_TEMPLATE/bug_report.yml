@@ -9,7 +9,8 @@ body:
         extension never shows them, and we never need them.
 
         Security issue? Do not file it here — see
-        [SECURITY.md](../blob/master/SECURITY.md) for private reporting.
+        [SECURITY.md](https://github.com/1132-Fixer/1132-Fixer-Chrome/blob/master/SECURITY.md)
+        for private reporting.
   - type: textarea
     id: what-happened
     attributes:

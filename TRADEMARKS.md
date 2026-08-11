@@ -1,5 +1,9 @@
 # Trademark notice
 
+*Working draft — the wording of this notice is pending final legal confirmation
+by the project owner. The boundaries it describes are in effect; the phrasing
+may be refined.*
+
 *Added 2026-08-11. This notice applies prospectively from the date it is added
 to the repository. It does not state, and must not be read to imply, that any
 rights previously granted are cancelled or retracted.*
@@ -19,9 +23,9 @@ is not a license to use the names or logo above as brands.
 
 Rights in these names and marks are reserved **only to the extent actually
 controlled by the project**. This notice claims no exclusive ownership of any
-asset whose provenance has not been established; the provenance of the current
-logo artwork is tracked in the project's asset records and this notice will be
-corrected as findings are established.
+asset whose provenance has not been established. A provenance review of the
+current logo artwork concluded on 2026-08-09; per-asset dispositions are still
+being finalized, and this notice will be corrected as they are established.
 
 ## What you can do without asking
 

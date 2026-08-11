@@ -67,13 +67,13 @@ GOOD TO KNOW
 - You will be signed out of Zoom in the browser. That is the point: the next sign-in starts clean.
 - If a 1132 loop survives a cookie clear, the cause is elsewhere, and Chrome's own Settings > Privacy and security > Delete browsing data covers the heavier options.
 
-OPEN SOURCE
+SOURCE CODE
 
-MIT licensed, and the source is public: https://github.com/PrimeUpYourLife/1132-Fixer-Chrome
+Source code is public under the MIT license: https://github.com/1132-Fixer/1132-Fixer-Chrome
 
 The repository ships its own checks, including a validator that fails the build if a broader permission or a non-cookie clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
 
-Chrome sibling of 1132 Fixer for Windows: https://github.com/PrimeUpYourLife/1132-Fixer-Windows
+Chrome sibling of 1132 Fixer for Windows: https://github.com/1132-Fixer/1132-Fixer-Windows
 
 Independent project. Not affiliated with, endorsed by, or sponsored by Zoom Video Communications, Inc. "Zoom" is their trademark, used here only to say which site this extension works on.
 ```

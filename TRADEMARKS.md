@@ -1,8 +1,9 @@
+> Working draft — pending operator legal confirmation.
+
 # Trademark notice
 
-*Working draft — the wording of this notice is pending final legal confirmation
-by the project owner. The boundaries it describes are in effect; the phrasing
-may be refined.*
+*The boundaries this notice describes are in effect; the phrasing may be
+refined.*
 
 *Added 2026-08-11. This notice applies prospectively from the date it is added
 to the repository. It does not state, and must not be read to imply, that any

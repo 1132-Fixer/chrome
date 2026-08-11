@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an improvement.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Heads up: the extension is deliberately narrow — Zoom-only, cookies-only,
+        one button. Requests that widen that scope are usually declined; see
+        [CONTRIBUTING.md](https://github.com/1132-Fixer/1132-Fixer-Chrome/blob/master/CONTRIBUTING.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true

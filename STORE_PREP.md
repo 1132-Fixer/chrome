@@ -99,14 +99,14 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 
 | Field                  | Value                                                                                                |
 | ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| Name                   | `1132 Fixer`                                                                                         |
-| Short description      | `One-click Zoom 1132 cleaner: deletes Zoom cookies, then reloads the tab. Cookies only.` *(132 chars max — currently 86)* |
+| Name                   | `1132 Fixer for Chrome`                                                                              |
+| Short description      | `Clear Zoom site data in Chrome with one guided action.` *(132 chars max — currently 54)* |
 | Category               | Productivity                                                                                         |
 | Language               | English (United States)                                                                              |
 | Primary functionality  | Cookie cleaner                                                                                       |
 | Single purpose         | See statement above.                                                                                 |
 | Permissions            | See justification table.                                                                             |
-| Privacy policy URL     | **VERIFIED** — `https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html` (HTTPS, public, GitHub Pages, content matches [PRIVACY_POLICY.md](PRIVACY_POLICY.md); fetch returned `200 OK` and page text contains "Privacy Policy", "1132 Fixer", "No telemetry", "user-triggered"). |
+| Privacy policy URL     | **VERIFIED 2026-08-11** — `https://1132-fixer.github.io/1132-Fixer-Chrome/privacy.html` (HTTPS, public, GitHub Pages, content matches [PRIVACY_POLICY.md](PRIVACY_POLICY.md); fetch returned `200 OK` and page text contains "Privacy Policy"). The pre-transfer URL `https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html` is dead — GitHub Pages does not redirect across owners. |
 
 ### Long description (paste into store form, ≤16 000 chars)
 
@@ -243,7 +243,7 @@ Use the values below verbatim when filling out the Web Store dev console. Anythi
 
 ```text
 Name:               1132 Fixer for Chrome
-Summary (≤132):     One-click Zoom cookie cleaner. Clears zoom.us and zoom.com cookies, then reloads the active Zoom tab.
+Summary (≤132):     Clear Zoom site data in Chrome with one guided action.
 Category:           Productivity
 Language:           English (United States)
 Detailed description:

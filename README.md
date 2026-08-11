@@ -14,13 +14,13 @@
   <img alt="Local only" src="https://img.shields.io/badge/Privacy-Local%20only-39D353">
   <img alt="Zoom only" src="https://img.shields.io/badge/Scope-Zoom%20only-3A82F7">
   <img alt="MIT license" src="https://img.shields.io/badge/License-MIT-8FC2FF">
-  <a href="https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/actions/workflows/ci.yml"><img alt="Build status" src="https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/1132-Fixer/chrome/actions/workflows/ci.yml"><img alt="Build status" src="https://github.com/1132-Fixer/chrome/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
 <p align="center">
   <a href="https://1132-fixer.xyz/"><strong>Visit Website</strong></a>
   &nbsp;•&nbsp;
-  <a href="https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new"><strong>Feedback &amp; Report</strong></a>
+  <a href="https://github.com/1132-Fixer/chrome/issues/new"><strong>Feedback &amp; Report</strong></a>
   &nbsp;•&nbsp;
   <a href="PRIVACY_POLICY.md"><strong>Privacy Policy</strong></a>
   &nbsp;•&nbsp;
@@ -90,7 +90,7 @@ The extension does not request `<all_urls>`, `browsingData`, `history`, or `scri
 - Open a tab on `zoom.us` or `zoom.com`.
 - Open the extension again.
 - If the popup says **NOT ZOOM**, check the address in the active tab.
-- If Error 1132 remains, try the [Windows app](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest) or send a [Feedback & Report](https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new).
+- If Error 1132 remains, try the [Windows app](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest) or send a [Feedback & Report](https://github.com/1132-Fixer/chrome/issues/new).
 
 ## Current support status
 

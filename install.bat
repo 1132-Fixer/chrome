@@ -10,7 +10,7 @@ if not exist "%EXT_DIR%\manifest.json" (
   echo [ERROR] manifest.json not found in:
   echo   %EXT_DIR%
   echo.
-  echo This installer must run from the 1132-Fixer-Chrome repo folder.
+  echo This installer must run from the 1132 Fixer chrome repo folder.
   echo.
   pause
   exit /b 1

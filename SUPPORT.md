@@ -13,7 +13,7 @@
 - **Report-a-Bug page** — the **Feedback & Report** link in the extension footer
   opens an in-extension report form (with an optional screenshot attachment once
   the support service is live).
-- **GitHub issues** — <https://github.com/1132-Fixer/1132-Fixer-Chrome/issues>
+- **GitHub issues** — <https://github.com/1132-Fixer/chrome/issues>
   for bugs, questions, and feature requests.
 - **Website** — <https://1132-fixer.xyz/>.
 

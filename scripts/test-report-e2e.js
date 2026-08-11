@@ -110,7 +110,7 @@ async function withReportPage(cfg, fn) {
     }));
     check(s.fallbackHidden === false, 'fallback view is shown');
     check(s.formHidden === true, 'form stays hidden');
-    check(s.link.includes('github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new'),
+    check(s.link.includes('github.com/1132-Fixer/chrome/issues/new'),
       'fallback links to GitHub issues', s.link);
   });
 

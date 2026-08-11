@@ -226,7 +226,7 @@ const RUNTIME_URL_RE = /https?:\/\/[^\s"')]+/gi;
 // script, just an <a href> the user clicks. Keep this list exact-match tiny.
 const ALLOWED_STATIC_LINKS = new Set([
   'https://1132-fixer.xyz/',
-  'https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new',
+  'https://github.com/1132-Fixer/chrome/issues/new',
 ]);
 for (const f of SCAN_FILES) {
   const txt = readText(f);
@@ -431,7 +431,7 @@ for (const { re, name } of [
 }
 {
   const htmlUrls = (reportHtml.match(/https?:\/\/[^\s"')]+/gi) || []).filter(u =>
-    !['https://1132-fixer.xyz/', 'https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues/new'].includes(u));
+    !['https://1132-fixer.xyz/', 'https://github.com/1132-Fixer/chrome/issues/new'].includes(u));
   if (htmlUrls.length === 0) pass('report.html carries only the two static links');
   else fail('report.html carries only the two static links', htmlUrls.join(', '));
 }

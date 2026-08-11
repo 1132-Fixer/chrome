@@ -106,7 +106,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 | Primary functionality  | Cookie cleaner                                                                                       |
 | Single purpose         | See statement above.                                                                                 |
 | Permissions            | See justification table.                                                                             |
-| Privacy policy URL     | **VERIFIED 2026-08-11** — `https://1132-fixer.github.io/1132-Fixer-Chrome/privacy.html` (HTTPS, public, GitHub Pages, content matches [PRIVACY_POLICY.md](PRIVACY_POLICY.md); fetch returned `200 OK` and page text contains "Privacy Policy"). The pre-transfer URL `https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html` is dead — GitHub Pages does not redirect across owners. |
+| Privacy policy URL     | **VERIFIED 2026-08-11 (post-rename)** — `https://1132-fixer.github.io/chrome/privacy.html` (HTTPS, public, GitHub Pages, content matches [PRIVACY_POLICY.md](PRIVACY_POLICY.md); fetch returned `200 OK` and page text contains "Privacy Policy"; re-verified after the repository rename to `1132-Fixer/chrome`). The pre-rename URL `https://1132-fixer.github.io/1132-Fixer-Chrome/privacy.html` and the pre-transfer URL `https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html` are both dead — GitHub Pages does not redirect Pages URLs across renames or owner transfers. |
 
 ### Long description (paste into store form, ≤16 000 chars)
 
@@ -135,7 +135,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 >
 > **Open source**
 >
-> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest). MIT licensed. Source: <https://github.com/PrimeUpYourLife/1132-Fixer-Chrome>.
+> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest). MIT licensed. Source: <https://github.com/1132-Fixer/chrome>.
 >
 > Independent project. Not affiliated with Zoom Video Communications, Inc.
 
@@ -256,8 +256,8 @@ Screenshots:        store-assets/01-zoom-detected.png
                     store-assets/03-non-zoom-safe.png
                     store-assets/04-extension-details-permissions.png
 Official URL:       leave "None" until 1132-fixer.xyz is Search-Console-verified
-Homepage URL:       https://github.com/PrimeUpYourLife/1132-Fixer-Chrome
-Support URL:        https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues
+Homepage URL:       https://github.com/1132-Fixer/chrome
+Support URL:        https://github.com/1132-Fixer/chrome/issues
 Mature content:     No
 Item support:       On
 ```
@@ -277,7 +277,7 @@ Permission justifications (paste each verbatim into the matching field):
     (browsingData and scripting are no longer requested — remove any leftover
      justification text for them from the v1.1.0 submission.)
 
-Privacy policy URL: https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html
+Privacy policy URL: https://1132-fixer.github.io/chrome/privacy.html
 
 Data usage — FOR A RELEASE WITHOUT the Report-a-Bug page, leave ALL nine
 checkboxes UNCHECKED. FOR ANY RELEASE THAT INCLUDES the Report-a-Bug page,

@@ -29,6 +29,11 @@ const ENTRIES = [
   'popup.html',
   'popup.css',
   'popup.js',
+  // popup.js is an ES module: these are imported, not referenced from the
+  // HTML, so they have to be listed explicitly or the popup ships broken.
+  'src/core/zoom-hosts.js',
+  'src/core/cookie-cleanup.js',
+  'src/core/result.js',
   'report.html',
   'report.css',
   'report.js',

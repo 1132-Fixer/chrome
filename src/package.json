@@ -1,0 +1,4 @@
+{
+  "//": "Scope marker only. Everything under src/ is an ES module, while the repo root stays CommonJS for the scripts/ tooling. No dependencies, no build step.",
+  "type": "module"
+}

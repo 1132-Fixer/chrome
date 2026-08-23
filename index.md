@@ -10,26 +10,35 @@ permalink: /
 <div class="cta-row" markdown="0">
   <div class="cta-card">
     <h3>Install</h3>
-    <p>Load the latest unpacked build or grab it from the Chrome Web Store once review completes.</p>
+    <p>Load the unpacked 1.2.7 source. The Chrome Web Store listing is live but older (measured 1.2.1) — this repo does not publish.</p>
     <a class="btn" href="https://github.com/1132-Fixer/chrome#install-unpacked-for-development">Get the extension</a>
   </div>
   <div class="cta-card">
     <h3>Privacy</h3>
-    <p>Read the full canonical privacy policy. Zero data collection, zero network traffic from the extension.</p>
+    <p>Read the full canonical privacy policy. The fix flow is local; bug reports are optional and user-triggered.</p>
     <a class="btn secondary" href="./privacy.html">Read privacy policy</a>
   </div>
 </div>
 
+## What Error 1132 means here
+
+In **this browser tool**, Zoom Error 1132 is treated as stale Zoom *browser* state: cookies on `zoom.us` / `zoom.com` and this tab's Zoom site data. Clearing that state after **FIX ZOOM** and reloading the tab is the whole job.
+
+This is **not** the Windows-profile path. The [Windows app](https://github.com/1132-Fixer/windows) uses a helper account named `user1`. This extension does not create Windows accounts, does not touch `user1`, and does not launch Zoom Workplace.
+
 ## What it does
 
-1132 Fixer is the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows). One purpose: clear Zoom browser state related to error **1132**, then reload the Zoom tab.
+1132 Fixer is the Chrome sibling of [1132 Fixer for Windows](https://github.com/1132-Fixer/windows). One purpose: clear Zoom browser state related to error **1132**, then reload the Zoom tab.
 
 - On `zoom.us`, `zoom.com`, or any of their subdomains, the popup shows **ZOOM DETECTED** and a single **FIX ZOOM** button. No options, no checkboxes, no log to read.
 - On any other site (or `chrome://` / `about:` pages), the popup shows one line asking you to open a Zoom tab. No button is offered. The extension does not request access to non-Zoom hosts.
 - Every clear is user-triggered. The popup never deletes anything on open, install, startup, page-load, or a timer.
 
+Source version is **1.2.7**. Chrome, Edge, Brave, and Firefox packages exist from this tree; Firefox runtime is `MANUAL_VALIDATION_REQUIRED`. The live Chrome Web Store listing was measured **1.2.1**.
+
 ## What it does *not* do
 
+- **No Windows `user1` / isolated-profile repair.** That is the Windows app only.
 - **No unrelated-origin clearing.** Other sites, the global HTTP cache, and service workers are left alone. Zoom site data is cleared only in the active Zoom tab, and only after **FIX ZOOM**.
 - No data collection. No analytics. No telemetry pings of any kind.
 - No remote code. Every script ships in the package — no `fetch`, no `XMLHttpRequest`, no `WebSocket`, no `sendBeacon`, no `eval`, no `new Function`.
@@ -53,6 +62,6 @@ There is no `browsingData` permission and no `<all_urls>` host permission. `scri
 
 - **Privacy:** [Full privacy policy](./privacy.html)
 - **Source:** [github.com/1132-Fixer/chrome](https://github.com/1132-Fixer/chrome)
-- **Windows sibling:** [github.com/PrimeUpYourLife/1132-Fixer-Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows)
-- **License:** MIT
+- **Windows sibling:** [github.com/1132-Fixer/windows](https://github.com/1132-Fixer/windows)
+- **License:** [MIT](https://github.com/1132-Fixer/chrome/blob/main/LICENSE) · [NOTICE](https://github.com/1132-Fixer/chrome/blob/main/NOTICE.md)
 - *Independent project. Not affiliated with Zoom Video Communications, Inc.*

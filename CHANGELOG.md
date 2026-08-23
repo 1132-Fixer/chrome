@@ -5,9 +5,10 @@ Notable changes to 1132 Fixer for Chrome. Versions follow the shipped
 
 ## Unreleased
 
-- Packaging paths for Chrome, Edge, Brave, and Firefox (`npm run package:all`).
-  Firefox zip carries `browser_specific_settings.gecko`. One zip is not
-  universal. Chrome-only claims stay on the Chrome package. No store publish.
+- README / NOTICE modernization: Error 1132 browser vs Windows-profile split,
+  Chrome/Edge/Brave/Firefox packaging status, Firefox runtime
+  `MANUAL_VALIDATION_REQUIRED`, store-version honesty (source 1.2.7; live
+  Chrome Web Store listing measured 1.2.1). No store publish.
 
 ## 1.2.7 — 2026-08-23
 
@@ -19,6 +20,9 @@ Notable changes to 1132 Fixer for Chrome. Versions follow the shipped
   `<all_urls>` stay out. Tests cover Zoom vs non-Zoom, click-gating,
   unrelated-origin isolation, permission freeze, no hidden background
   cleanup, and failure handling.
+- Packaging paths for Chrome, Edge, Brave, and Firefox (`npm run package:all`).
+  Firefox zip carries `browser_specific_settings.gecko`. One zip is not
+  universal. Chrome-only claims stay on the Chrome package. No store publish.
 
 ## 1.2.6
 

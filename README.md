@@ -107,6 +107,7 @@ The **Feedback & Report** link opens the extension's own Report-a-Bug page. Whil
 npm test
 node scripts/validate-extension.js
 node scripts/test-popup-e2e.js
+node scripts/test-packages.js
 ```
 
 The checks protect these rules:
@@ -117,6 +118,8 @@ The checks protect these rules:
 - no automatic clearing;
 - no remote runtime code;
 - all popup files are included in the store package;
+- Chrome, Edge, Brave, and Firefox packages exist as separate zips;
+- Chrome-only claims stay on the Chrome package;
 - the version is the same in every file;
 - the footer stays on one row;
 - the header logo has no extra dark holder.
@@ -127,7 +130,19 @@ The checks protect these rules:
 npm run version:print
 npm run bump
 npm run release
+npm run package:all
 ```
+
+`npm run package` still builds the Chrome zip at `store-assets/1132-fixer-chrome-<version>.zip`. `npm run package:all` writes four zips under `packages/`:
+
+| Target | Zip | Manifest |
+|---|---|---|
+| Chrome | `1132-fixer-chrome-<version>.zip` | source `manifest.json` (Chrome name/description) |
+| Edge | `1132-fixer-edge-<version>.zip` | Chromium overlay |
+| Brave | `1132-fixer-brave-<version>.zip` | Chromium overlay — not a Brave store |
+| Firefox | `1132-fixer-firefox-<version>.zip` | gecko `browser_specific_settings`; no `minimum_chrome_version` |
+
+Firefox load-unpacked is `MANUAL_VALIDATION_REQUIRED`. This repo does not publish to any store.
 
 Use `scripts/bump-version.js` to change the version. It updates `manifest.json`, `package.json`, and the popup version badge together.
 
@@ -145,7 +160,8 @@ See [STORE_PREP.md](STORE_PREP.md) for the full Chrome Web Store checklist.
 
 | File | Purpose |
 |---|---|
-| `manifest.json` | Chrome settings and permissions. |
+| `manifest.json` | Chrome settings and permissions (live Chrome identity). |
+| `scripts/browser-targets.js` | Edge / Brave / Firefox manifest overlays. |
 | `popup.html` | Popup layout. |
 | `popup.css` | Shared navy and blue theme. |
 | `popup.js` | Zoom detection, Zoom-origin cleanup, and reload. |

@@ -30,6 +30,9 @@ jobs:
       - name: Source-level validation
         run: node scripts/validate-extension.js
 
+      - name: Browser package smoke
+        run: node scripts/test-packages.js
+
       - name: Popup end-to-end behaviour tests
         run: node scripts/test-popup-e2e.js
 

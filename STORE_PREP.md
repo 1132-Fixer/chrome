@@ -45,6 +45,8 @@ Run from the repo root, on any OS:
 
 ```bash
 npm run package      # -> store-assets/1132-fixer-chrome-<version>.zip
+npm run package:all  # -> packages/1132-fixer-{chrome,edge,brave,firefox}-<version>.zip
+                     #    (packaging only; does not publish. Firefox zip is a different manifest.)
 ```
 
 `scripts/package-extension.js` writes the zip itself (no dependencies, no PowerShell), puts `manifest.json` at the zip root as the Web Store requires, uses fixed timestamps so the same tree always produces identical bytes, and refuses to build if any shipped file is missing.

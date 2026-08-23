@@ -63,5 +63,5 @@ There is no `browsingData` permission and no `<all_urls>` host permission. `scri
 - **Privacy:** [Full privacy policy](./privacy.html)
 - **Source:** [github.com/1132-Fixer/chrome](https://github.com/1132-Fixer/chrome)
 - **Windows sibling:** [github.com/1132-Fixer/windows](https://github.com/1132-Fixer/windows)
-- **License:** [MIT](https://github.com/1132-Fixer/chrome/blob/main/LICENSE) · [NOTICE](https://github.com/1132-Fixer/chrome/blob/main/NOTICE.md)
+- **License:** Code, documentation, and design tokens are [MIT](https://github.com/1132-Fixer/chrome/blob/main/LICENSE). The 1132 Fixer name, logo, icons, and brand artwork are **not** covered by the MIT licence, prospectively from the notice date — see [TRADEMARKS](https://github.com/1132-Fixer/chrome/blob/main/TRADEMARKS.md), the per-file [ASSET-LICENSE](https://github.com/1132-Fixer/chrome/blob/main/ASSET-LICENSE.md), and [NOTICE](https://github.com/1132-Fixer/chrome/blob/main/NOTICE.md).
 - *Independent project. Not affiliated with Zoom Video Communications, Inc.*

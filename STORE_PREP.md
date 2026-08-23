@@ -58,7 +58,7 @@ npm run package:all  # -> packages/1132-fixer-{chrome,edge,brave,firefox}-<versi
 | Bump the version              | `npm run bump` (patch), `npm run bump:minor`, `npm run bump:major`, or `node scripts/bump-version.js 1.4.2` | Updates `manifest.json`, `package.json`, and the popup's version chip together. The validator fails if they ever drift. |
 | Automatic bump                | push to `master` that touches `manifest.json`, `popup.*`, or `icons/`     | `.github/workflows/version-bump.yml` patch-bumps and commits `chore(release): vX.Y.Z [skip bump]`. Skipped when the push already changed the version, when the message contains `[skip bump]`, or when the bot itself pushed. |
 | Test gate                     | `npm test`, and CI on every push / PR                                     | Source validator + headless-Chromium e2e suite.                                              |
-| Build the zip                 | `npm run package`, or `npm run release` (test + package)                  | Deterministic 11-entry zip.                                                                  |
+| Build the zip                 | `npm run package`, or `npm run release` (test + package)                  | Deterministic 19-entry zip. `npm run package:all` builds the Chrome/Edge/Brave/Firefox zips — one zip is **not** universal; Firefox carries its own Gecko identity. |
 | Upload to the Web Store       | **Actions → Publish to Chrome Web Store → Run workflow**, `mode=upload-draft` | Uploads a draft. Nothing becomes public. Requires the operator to type the expected version as a confirmation. |
 | Go public                     | same workflow, `mode=upload-and-publish`                                 | Only with operator approval (see below). Publishing is effectively irreversible.               |
 
@@ -88,14 +88,20 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 
 ### Intentional inclusions in the zip
 
-| Included            | Reason                                                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `manifest.json`     | Required at zip root.                                                                             |
-| `popup.html/css/js` | Extension runtime.                                                                                |
-| `icons/`            | Source 144px + 16/32/48/128 + `popup-logo.png` (transparent popup header mark).                    |
-| `LICENSE`           | MIT license, helpful for reviewers.                                                               |
-| `README.md`         | Reviewer-readable description of behavior and manual test steps.                                  |
-| `PRIVACY_POLICY.md` | Ships the canonical privacy text alongside the runtime so the public hosted URL can be audited against it. |
+This table must match `const ENTRIES` in `scripts/package-extension.js`. Change one, change the other.
+
+| Included             | Reason                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `manifest.json`      | Required at zip root.                                                                             |
+| `popup.html/css/js`  | Extension runtime.                                                                                |
+| `report.html/css/js` | Report-a-Bug page runtime (#16).                                                                  |
+| `icons/`             | Source 144px + 16/32/48/128 + `popup-logo.png` (transparent popup header mark).                    |
+| `LICENSE`            | MIT license text, helpful for reviewers.                                                          |
+| `NOTICE.md`          | Attribution, Zoom/browser-vendor non-affiliation, third-party statement. Referenced by the shipped README. |
+| `TRADEMARKS.md`      | The mark carve-out and the permitted uses. Ships so the carve-out travels with the package, not only with the repo. |
+| `ASSET-LICENSE.md`   | Per-file annex to `TRADEMARKS.md`: exact carved-out asset files and their provenance records.      |
+| `README.md`          | Reviewer-readable description of behavior and manual test steps; states the MIT/mark boundary and links to the three notices above. |
+| `PRIVACY_POLICY.md`  | Ships the canonical privacy text alongside the runtime so the public hosted URL can be audited against it. |
 
 ## Store listing fields
 
@@ -137,7 +143,7 @@ Add all four under **Settings → Secrets and variables → Actions**, and creat
 >
 > **Open source**
 >
-> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest). MIT licensed. Source: <https://github.com/1132-Fixer/chrome>.
+> Built as the Chrome sibling of [1132 Fixer for Windows](https://github.com/1132-Fixer/windows/releases/latest). Code, documentation, and design tokens are MIT licensed; the 1132 Fixer name, logo, and icons are not covered by the MIT licence (see `TRADEMARKS.md` and `ASSET-LICENSE.md`). Source: <https://github.com/1132-Fixer/chrome>.
 >
 > Independent project. Not affiliated with Zoom Video Communications, Inc.
 
@@ -198,25 +204,42 @@ Run every row of the **Manual test checklist** in [README.md](README.md). Captur
 
 ## Package zip — verified contents
 
-Running the packaging command above produces a 13-entry zip. **Verified locally** — see the "Tests / checks run" section of the most recent task report for the exact byte count and entry list. The shape is:
+Running the packaging command above produces a **19-entry** zip, in this order (the order of `const ENTRIES` in `scripts/package-extension.js`):
 
 ```
+manifest.json          (must be at the zip root)
+popup.html
+popup.css
+popup.js
+report.html
+report.css
+report.js
 icons/icon.png         (source 144×144 — safe to ship as the brand asset)
 icons/icon16.png
 icons/icon32.png
 icons/icon48.png
 icons/icon128.png
 icons/popup-logo.png   (transparent popup header mark)
-manifest.json
-popup.html
-popup.css
-popup.js
-LICENSE
+LICENSE                (MIT text)
+NOTICE.md              (attribution + non-affiliation)
+TRADEMARKS.md          (mark carve-out — the names/logo are not MIT)
+ASSET-LICENSE.md       (per-file carve-out list + provenance)
 README.md
 PRIVACY_POLICY.md
 ```
 
 `manifest.json` is at the top level of the zip (Chrome Web Store requirement).
+
+**Verified 2026-08-23** on `docs/license-boundary` with `npm run package:all` at manifest version **1.2.7**. Every target zip carries the same 19 entries; only `manifest.json` differs between targets:
+
+| Target  | File                                | Bytes   | Entries | SHA-256 |
+| ------- | ----------------------------------- | ------- | ------- | ------- |
+| chrome  | `packages/1132-fixer-chrome-1.2.7.zip`  | 128021 | 19 | `f1bfaeada18c0905d29ef37d7de6d68c3f8ca803143b007aa05b2e7176450398` |
+| edge    | `packages/1132-fixer-edge-1.2.7.zip`    | 128018 | 19 | `926c292918506f03c0e6094ab0ca04347ec9409355550b72e6fb4ce39955d6b1` |
+| brave   | `packages/1132-fixer-brave-1.2.7.zip`   | 128018 | 19 | `e151e58c4e592eeadbc40878f75f78dd0c2c0a39f8be94bf640360c546760525` |
+| firefox | `packages/1132-fixer-firefox-1.2.7.zip` | 128064 | 19 | `0b68c94bd86f252dbbcbe02046293e0110d7f134fc1ae12efbfa4698eebf6e07` |
+
+Chrome keeps the source `manifest.json` bytes verbatim; Edge and Brave overlay only `name` and `description`. The Firefox zip is **not** the same package — it drops `minimum_chrome_version` and adds its own `browser_specific_settings.gecko` identity, so it must never be described as one universal cross-browser build. `scripts/test-packages.js` re-derives these zips and asserts every `ENTRIES` path is present in each one; `npm test` runs it.
 
 ## Known limitations to disclose
 

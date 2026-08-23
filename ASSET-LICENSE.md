@@ -6,12 +6,18 @@ Added 2026-08-09. **This notice applies prospectively from the date it is added 
 repository. It does not state, and must not be read to imply, that any rights previously
 granted are cancelled or retracted.**
 
+This file is the per-file annex to [TRADEMARKS.md](TRADEMARKS.md). TRADEMARKS.md states
+the boundary and the permitted uses; this file lists the exact asset files the boundary
+covers and records their provenance. Where the two differ on the description of a mark,
+TRADEMARKS.md governs. [NOTICE.md](NOTICE.md) carries attribution and non-affiliation.
+
 ## What the MIT license covers
 
 The [MIT license](LICENSE) covers the code, the documentation, and the eligible design
 tokens in this repository. That includes, without limitation:
 
-- the extension source: `manifest.json`, `popup.html`, `popup.css`, `popup.js`
+- the extension source: `manifest.json`, `popup.html`, `popup.css`, `popup.js`,
+  `report.html`, `report.css`, `report.js`
 - the build, packaging, validation, and test scripts in `scripts/`
 - the design-token vocabulary in `ds-bundle/` (CSS custom properties: colors, gradients,
   spacing, radii, typography variables) and the component markup, styles, and layout in

@@ -12,8 +12,12 @@
  *   node scripts/package-extension.js firefox
  *     -> packages/1132-fixer-firefox-<version>.zip
  *
- * Ships exactly the runtime files plus LICENSE, README.md, PRIVACY_POLICY.md.
+ * Ships exactly the runtime files plus the licence set and the documents
+ * reviewers benefit from: LICENSE, NOTICE.md, TRADEMARKS.md, ASSET-LICENSE.md,
+ * README.md, PRIVACY_POLICY.md. The three notice files ship because the shipped
+ * README states the mark carve-out and links to them.
  * Dev tooling, store assets, CI config and git metadata are excluded.
+ * The exact inventory is mirrored in STORE_PREP.md — keep them in step.
  *
  * Chrome keeps the source manifest.json bytes. Other targets overlay name /
  * description (and Firefox gecko settings) from scripts/browser-targets.js.
@@ -48,6 +52,9 @@ const ENTRIES = [
   'icons/icon128.png',
   'icons/popup-logo.png',
   'LICENSE',
+  'NOTICE.md',
+  'TRADEMARKS.md',
+  'ASSET-LICENSE.md',
   'README.md',
   'PRIVACY_POLICY.md',
 ];

@@ -17,8 +17,10 @@ This notice covers, to the extent actually controlled by the project:
 - the **1132 Fixer gear logo** (the blue gear device with orange "1132" and
   silver "Fixer" lettering, in all renditions).
 
-The [MIT license](LICENSE) covers this repository's code and documentation. It
-is not a license to use the names or logo above as brands.
+The [MIT license](LICENSE) covers this repository's code, documentation, and
+design tokens. It is not a license to use the names or logo above as brands.
+[ASSET-LICENSE.md](ASSET-LICENSE.md) lists the exact asset files this boundary
+covers and records their provenance.
 
 ## Honesty clause
 

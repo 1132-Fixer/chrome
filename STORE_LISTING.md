@@ -72,6 +72,8 @@ SOURCE CODE
 
 Source code is public under the MIT license: https://github.com/1132-Fixer/chrome
 
+The MIT license covers the code, the documentation, and the design tokens. The 1132 Fixer name, logo, icons, and brand artwork are not covered by it, prospectively from the notice date: https://github.com/1132-Fixer/chrome/blob/main/TRADEMARKS.md (per-file list: https://github.com/1132-Fixer/chrome/blob/main/ASSET-LICENSE.md). Forks are welcome under MIT — please pick your own name and icon.
+
 The repository ships its own checks, including a validator that fails the build if a broader permission or a hidden auto-clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
 
 Chrome sibling of 1132 Fixer for Windows: https://github.com/1132-Fixer/windows

@@ -206,4 +206,10 @@ The checks protect these rules:
 
 ## License
 
-[MIT](LICENSE). The 1132 Fixer name, logo, and icons are **not** covered by the MIT licence — see [TRADEMARKS.md](TRADEMARKS.md) and [NOTICE.md](NOTICE.md).
+Code, documentation, and design tokens: [MIT](LICENSE).
+
+The 1132 Fixer product names, logo, icons, and brand artwork are **not** covered by
+the MIT licence, prospectively from the notice date. See
+[TRADEMARKS.md](TRADEMARKS.md) for what you may do without asking,
+[ASSET-LICENSE.md](ASSET-LICENSE.md) for the exact file list and provenance records,
+and [NOTICE.md](NOTICE.md) for attribution and non-affiliation.

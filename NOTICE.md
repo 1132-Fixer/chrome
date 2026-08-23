@@ -19,7 +19,9 @@ are asked to credit the canonical repository:
 `https://github.com/1132-Fixer/chrome`
 
 The **1132 Fixer name, logo, and icons are trademarks and are not covered by the
-MIT licence.** See [TRADEMARKS.md](TRADEMARKS.md).
+MIT licence**, prospectively from the notice date. See [TRADEMARKS.md](TRADEMARKS.md)
+for permitted uses and [ASSET-LICENSE.md](ASSET-LICENSE.md) for the exact file
+list and provenance records.
 
 ---
 
@@ -57,4 +59,5 @@ are MIT-licensed project tooling and are not a runtime dependency of the
 extension.
 
 Image and icon assets under `icons/` and `assets/` are project brand assets —
-see [TRADEMARKS.md](TRADEMARKS.md).
+see [TRADEMARKS.md](TRADEMARKS.md) and the per-file list in
+[ASSET-LICENSE.md](ASSET-LICENSE.md).

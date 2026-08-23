@@ -5,7 +5,9 @@
 1. Open a tab on `zoom.us` or `zoom.com`.
 2. Open the 1132 Fixer extension and press **FIX ZOOM**.
 3. If the popup says **NOT ZOOM**, check the address in the active tab.
-4. If the error remains, try the Windows app (linked from the README) or send a
+4. If the error remains, this browser jar is not the cause. Try the
+   [Windows app](https://github.com/1132-Fixer/windows/releases/latest)
+   (`user1` / isolated profile — this extension does not do that) or send a
    bug report.
 
 ## Ways to get help
@@ -20,7 +22,8 @@
 ## Privacy questions
 
 See [PRIVACY_POLICY.md](PRIVACY_POLICY.md). Short version: the extension runs
-locally, clears only Zoom cookies, and sends nothing anywhere on its own.
+locally, clears only Zoom-origin cookies and this tab's Zoom site data after
+you press **FIX ZOOM**, and sends nothing on its own.
 
 ## Security issues
 

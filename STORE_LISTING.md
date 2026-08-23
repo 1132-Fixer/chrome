@@ -74,7 +74,7 @@ Source code is public under the MIT license: https://github.com/1132-Fixer/chrom
 
 The repository ships its own checks, including a validator that fails the build if a broader permission or a hidden auto-clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
 
-Chrome sibling of 1132 Fixer for Windows: https://github.com/1132-Fixer/1132-Fixer-Windows
+Chrome sibling of 1132 Fixer for Windows: https://github.com/1132-Fixer/windows
 
 Independent project. Not affiliated with, endorsed by, or sponsored by Zoom Video Communications, Inc. "Zoom" is their trademark, used here only to say which site this extension works on.
 ```

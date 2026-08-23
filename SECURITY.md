@@ -18,8 +18,11 @@ Public issues are fine for everything that is not a security risk — see
 
 ## Scope
 
-The extension runs locally and touches only Zoom cookies. The one networked
-surface is the Report-a-Bug page, which talks only to the project's support
-service and only when you submit a report. Reports about any behavior outside
-that boundary — unexpected network traffic, access to non-Zoom data, or data
-leaving the browser — are exactly what this policy is for.
+The extension runs locally and touches only Zoom-origin browser state (cookies
+plus the active Zoom tab's site data), and only after the user presses
+**FIX ZOOM**. It does not perform the Windows `user1` / isolated-profile
+repair. The one networked surface is the Report-a-Bug page, which talks only
+to the project's support service and only when you submit a report. Reports
+about any behavior outside that boundary — unexpected network traffic, access
+to non-Zoom data, or data leaving the browser — are exactly what this policy
+is for.

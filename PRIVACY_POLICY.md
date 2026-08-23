@@ -19,7 +19,7 @@ This is the privacy policy for the **1132 Fixer** Chrome extension distributed v
 
 ## What the extension does
 
-- It is the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest). It exists to mitigate Zoom error 1132 and similar stale-cookie sign-in loops.
+- It is the Chrome sibling of [1132 Fixer for Windows](https://github.com/1132-Fixer/windows/releases/latest). It exists to mitigate Zoom error 1132 as stale Zoom *browser* state (cookies plus this tab's Zoom site data). It does not perform the Windows `user1` / isolated-profile repair.
 - When the active tab is on `zoom.us`, `zoom.com`, or any of their subdomains, the popup shows **ZOOM DETECTED** and a single **FIX ZOOM** button. Clicking it deletes Zoom cookies, clears this tab's Zoom site data, and reloads the active Zoom tab.
 - On any other site (or `chrome://` / `about:` pages), **FIX ZOOM** stays hidden. The website and feedback links remain available. The extension does not request host access to non-Zoom domains.
 - All clearing is **user-triggered**. Opening the popup never deletes anything by itself; no install, startup, page-load, or timer hook clears data.

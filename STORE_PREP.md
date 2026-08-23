@@ -376,7 +376,7 @@ Not covered here:             live signed-in zoom.us walk
 
 | Blocker                                | Owner    | Status                                                                                                                                                       |
 | -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public privacy policy URL              | Claude   | **DONE** — `https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html` (HTTPS, 200 OK, content matches `PRIVACY_POLICY.md`).                          |
+| Public privacy policy URL              | Claude   | **DONE** — `https://1132-fixer.github.io/chrome/privacy.html` (HTTPS, `200 OK`, content matches `PRIVACY_POLICY.md`; re-verified 2026-08-23 after the transfer to `1132-Fixer`). The pre-transfer URL `https://primeupyourlife.github.io/1132-Fixer-Chrome/privacy.html` now returns `404` — GitHub Pages does not redirect across owner transfers. |
 | 440×280 promo tile (24-bit PNG)        | Claude   | **DONE for v1.2.0** — regenerated with cookies-only copy, verified 440×280 / 24-bit RGB.                                                                      |
 | 1400×560 marquee promo (optional)      | Claude   | **DONE for v1.2.0** — regenerated and re-centred, verified 1400×560 / 24-bit RGB.                                                                             |
 | 128×128 store icon (24-bit PNG)        | Claude   | **DONE for v1.2.0** — verified 128×128 / 24-bit RGB.                                                                                                          |

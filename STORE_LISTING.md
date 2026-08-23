@@ -1,6 +1,6 @@
 # Chrome Web Store — listing copy, ready to paste
 
-Everything below is the finished text for the developer dashboard, matching the repository's **v1.2.5** manifest (`cookies` + `activeTab`, four Zoom host patterns, cookies-only clear).
+Everything below is the finished text for the developer dashboard, matching the repository's **v1.2.7** manifest (`cookies` + `activeTab` + `scripting`, four Zoom host patterns, user-triggered Zoom-origin site-data clear).
 
 Two notes before you start:
 
@@ -30,19 +30,19 @@ Clear Zoom site data in Chrome with one guided action.
 ### Detailed description
 
 ```text
-Zoom error 1132 usually means a stale cookie, not a broken account. 1132 Fixer deletes your Zoom cookies and reloads the tab so you can sign in again. One button, nothing to configure.
+Zoom error 1132 usually means stale Zoom browser state, not a broken account. 1132 Fixer deletes your Zoom cookies and this tab's Zoom site data, then reloads the tab so you can sign in again. One button, nothing to configure.
 
 HOW IT WORKS
 
-Open zoom.us or zoom.com (any subdomain works) and click the 1132 Fixer icon. The popup shows the host it detected and a single FIX ZOOM button. Click it and the extension deletes every cookie Chrome holds for zoom.us and zoom.com, reloads the active Zoom tab, and tells you how many cookies it removed. That is the whole interface.
+Open zoom.us or zoom.com (any subdomain works) and click the 1132 Fixer icon. The popup shows ZOOM DETECTED and a single FIX ZOOM button. Click it and the extension deletes every cookie Chrome holds for zoom.us and zoom.com, clears this tab's localStorage, sessionStorage, Cache API, and IndexedDB, reloads the active Zoom tab, and tells you what it cleared. That is the whole interface. Opening the popup, or merely detecting Zoom, does not clear anything.
 
 On any other site, including chrome:// pages, the popup shows one line asking you to open a Zoom tab. The FIX ZOOM button does not appear, because there is nothing for it to do; only the footer links to the project website and issue page remain.
 
-COOKIES ONLY
+ZOOM-ORIGIN ONLY
 
-This extension clears cookies. That is all it clears.
+This extension clears Zoom cookies and the active Zoom tab's Zoom site data. That is all it clears.
 
-It does not touch localStorage or sessionStorage, the Cache API, IndexedDB, service worker registrations, or Chrome's global HTTP cache, for Zoom or for anyone else. Your Zoom preferences and cached assets survive the clear, and no other site's data is affected. The permissions that would allow that kind of clearing were removed from the extension in version 1.2.0.
+It does not touch other sites, service worker registrations, or Chrome's global HTTP cache. Page-data cleanup is injected only into the active Zoom tab after you click FIX ZOOM, and the injected function refuses to run on any other origin.
 
 WHAT IT DOES NOT DO
 
@@ -58,6 +58,7 @@ PERMISSIONS, IN PLAIN ENGLISH
 
 - cookies: list and delete cookies for zoom.us and zoom.com.
 - activeTab: read the active tab's address so the popup knows whether you are on Zoom, and reload that tab after a clear.
+- scripting: inject a one-shot cleaner into the active Zoom tab after FIX ZOOM, so that origin's localStorage, sessionStorage, Cache API, and IndexedDB can be cleared. Nothing is injected on install or page load.
 - Host access: zoom.us and zoom.com only, over both https and http. Both schemes are needed because Chrome hides a non-Secure cookie from an extension that only asks for https, which would leave stale cookies behind.
 
 GOOD TO KNOW
@@ -65,13 +66,13 @@ GOOD TO KNOW
 - The clear covers subdomains such as us02web.zoom.us, and covers partitioned (CHIPS) cookies where your Chrome version supports it.
 - Cookies are cleared for the Chrome profile you are using. An Incognito window keeps a separate cookie jar.
 - You will be signed out of Zoom in the browser. That is the point: the next sign-in starts clean.
-- If a 1132 loop survives a cookie clear, the cause is elsewhere, and Chrome's own Settings > Privacy and security > Delete browsing data covers the heavier options.
+- If a 1132 loop survives this clear, the cause is elsewhere, and Chrome's own Settings > Privacy and security > Delete browsing data covers the heavier options.
 
 SOURCE CODE
 
 Source code is public under the MIT license: https://github.com/1132-Fixer/chrome
 
-The repository ships its own checks, including a validator that fails the build if a broader permission or a non-cookie clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
+The repository ships its own checks, including a validator that fails the build if a broader permission or a hidden auto-clear is ever reintroduced, and a browser test suite that verifies the extension does nothing at all on lookalike hostnames such as zoom.us.evil.com.
 
 Chrome sibling of 1132 Fixer for Windows: https://github.com/1132-Fixer/1132-Fixer-Windows
 
@@ -118,7 +119,7 @@ Build them all with `npm run assets` (screenshot 4 is optional: `node scripts/ma
 ### Single purpose
 
 ```text
-1132 Fixer deletes cookies for zoom.us and zoom.com, including their subdomains, and then reloads the active Zoom tab. It exists to clear Zoom error 1132 and similar stale-cookie sign-in loops, where a Zoom session gets stuck because an old cookie is still present. Cookies are the only type of data the extension touches, and Zoom domains are the only sites it can reach.
+1132 Fixer deletes cookies for zoom.us and zoom.com, including their subdomains, and clears the active Zoom tab's localStorage, sessionStorage, Cache API, and IndexedDB, then reloads that tab. It exists to clear Zoom error 1132 and similar stale Zoom-browser-state sign-in loops. Cleanup is user-triggered only. Zoom domains are the only sites it can reach.
 ```
 
 ### Permission justification — `cookies`
@@ -130,7 +131,7 @@ The extension deletes cookies, so it needs the cookies permission to do its sing
 ### Permission justification — `activeTab`
 
 ```text
-The popup reads the active tab's URL when it opens, so it can tell whether the user is on a Zoom domain. On a Zoom tab it shows a FIX ZOOM button; anywhere else it shows no FIX ZOOM button, which prevents the user from clearing cookies from a page where that would be surprising. After a clear completes, the extension calls chrome.tabs.reload on that same tab so the signed-out state takes effect immediately. No content script is injected at install or page-load time, and page content is never read.
+The popup reads the active tab's URL when it opens, so it can tell whether the user is on a Zoom domain. On a Zoom tab it shows ZOOM DETECTED and a FIX ZOOM button; anywhere else it shows no FIX ZOOM button, which prevents the user from clearing data from a page where that would be surprising. After a clear completes, the extension calls chrome.tabs.reload on that same tab so the signed-out state takes effect immediately. No content script is injected at install or page-load time, and page content is never read.
 ```
 
 ### Permission justification — host permissions
@@ -138,10 +139,16 @@ The popup reads the active tab's URL when it opens, so it can tell whether the u
 Covers all four patterns: `https://*.zoom.us/*`, `https://*.zoom.com/*`, `http://*.zoom.us/*`, `http://*.zoom.com/*`.
 
 ```text
-Chrome only exposes a cookie to an extension that holds host permission for the URL the cookie belongs to, so chrome.cookies cannot see or delete Zoom cookies without these patterns. Both schemes are requested because Chrome maps a non-Secure cookie to an http:// URL: with https-only patterns, stale non-Secure Zoom cookies stay invisible and the clear silently misses them. Access is limited to zoom.us and zoom.com; no other host is requested, and the extension cannot read or change data on any other site. No content scripts are injected and no page content is read.
+Chrome only exposes a cookie to an extension that holds host permission for the URL the cookie belongs to, so chrome.cookies cannot see or delete Zoom cookies without these patterns. The same host patterns let chrome.scripting.executeScript run only in Zoom tabs after FIX ZOOM. Both schemes are requested because Chrome maps a non-Secure cookie to an http:// URL: with https-only patterns, stale non-Secure Zoom cookies stay invisible and the clear silently misses them. Access is limited to zoom.us and zoom.com; no other host is requested, and the extension cannot read or change data on any other site. No content scripts are registered. `<all_urls>` is not requested.
 ```
 
-> **If the form still shows `browsingData` or `scripting` justification fields** from the v1.1.0 submission, clear them. v1.2.0 does not request either permission, and a justification for a permission the manifest no longer holds is a review flag.
+### Permission justification — `scripting`
+
+```text
+scripting is required to run a one-shot, user-triggered cleaner inside the active Zoom tab so that origin's localStorage, sessionStorage, Cache API, and IndexedDB can be cleared. Those APIs are not reachable from chrome.cookies. The injected function re-checks location.hostname and refuses to run on any non-Zoom origin. No content script is registered, so nothing injects on install, startup, or page load. browsingData is not requested: it cannot clear sessionStorage and is broader than the current Zoom tab.
+```
+
+> Do not request `browsingData` or `<all_urls>`. If the form still shows a leftover `browsingData` justification from v1.1.0, clear it.
 
 ### Remote code
 

@@ -1,8 +1,8 @@
 {
   "name": "1132-fixer-chrome",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "private": true,
-  "description": "1132 Fixer for Chrome — one-button, user-triggered Zoom cookie cleaner. MV3, cookies only, no remote code, no telemetry.",
+  "description": "1132 Fixer for Chrome — one-button, user-triggered Zoom site-data cleaner. MV3, Zoom-origin only, no remote code, no telemetry.",
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "test": "node scripts/validate-extension.js && node scripts/test-popup-e2e.js",

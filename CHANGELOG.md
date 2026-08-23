@@ -5,6 +5,19 @@ Notable changes to 1132 Fixer for Chrome. Versions follow the shipped
 
 ## Unreleased
 
+## 1.2.7 — 2026-08-23
+
+- User-triggered Zoom-origin cleanup now includes the active Zoom tab's
+  `localStorage`, `sessionStorage`, Cache API, and IndexedDB in addition to
+  Zoom cookies. Detection still does not clear anything. Popup copy is
+  **ZOOM DETECTED** / **FIX ZOOM**. `scripting` is the minimum extra MV3
+  permission for the one-shot in-page cleaner; `browsingData` and
+  `<all_urls>` stay out. Tests cover Zoom vs non-Zoom, click-gating,
+  unrelated-origin isolation, permission freeze, no hidden background
+  cleanup, and failure handling.
+
+## 1.2.6
+
 - Public project documentation: security policy, contributing guide, code of
   conduct, support guide, trademark notice, issue and PR templates.
 - Product identity strings aligned to the canonical 1132 Fixer wording.

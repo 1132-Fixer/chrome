@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>A focused browser cleanup for Zoom error 1132.</strong><br>
-  Clears Zoom cookies, then reloads the current Zoom tab.
+  Clears Zoom cookies and this tab's Zoom site data, then reloads the current Zoom tab.
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@
 2. Open the 1132 Fixer extension.
 3. Press **FIX ZOOM**.
 
-The extension removes Zoom cookies and reloads the tab. It does not clear data from other sites.
+The extension removes Zoom cookies and this tab's Zoom site data, then reloads the tab. It does not clear data from other sites. Nothing is removed until you press **FIX ZOOM**.
 
 ## What it changes
 
@@ -43,13 +43,14 @@ The extension removes Zoom cookies and reloads the tab. It does not clear data f
 |---|---|
 | Zoom cookies on `zoom.us` and `zoom.com` | **Cleared** |
 | Zoom subdomain cookies | **Cleared** |
+| Active Zoom tab `localStorage` / `sessionStorage` | **Cleared** |
+| Active Zoom tab Cache API | **Cleared** |
+| Active Zoom tab IndexedDB | **Cleared** |
 | Other websites | Not touched |
-| `localStorage` and `sessionStorage` | Not touched |
-| Cache API and HTTP cache | Not touched |
-| IndexedDB | Not touched |
+| Global HTTP cache | Not touched |
 | Service workers | Not touched |
 
-Cookie values are never shown. The popup only reports how many cookies were removed.
+Cookie values are never shown. The popup reports how many Zoom cookies were removed and whether this tab's Zoom site data was cleared.
 
 ## Simple by design
 
@@ -58,7 +59,7 @@ Cookie values are never shown. The popup only reports how many cookies were remo
 - 🔒 **Local work** — cookie clearing happens in Chrome on your device.
 - ✋ **You stay in control** — nothing is removed until you press **FIX ZOOM**.
 - 🚫 **No tracking** — no analytics, telemetry, or background data upload.
-- 🧹 **Cookies only** — your cache, saved files, and other site data stay in place.
+- 🧹 **Zoom-origin only** — other sites, the global HTTP cache, and service workers stay in place.
 
 The website and feedback links open only when you click them.
 
@@ -81,9 +82,10 @@ On Windows, `install.bat` opens the right Chrome page and folder. It does not in
 |---|---|
 | `cookies` | Finds and removes Zoom cookies. |
 | `activeTab` | Checks the open tab and reloads it after the fix. |
-| `zoom.us` and `zoom.com` hosts | Allows cookie access only for Zoom sites. |
+| `scripting` | Injects a one-shot, origin-checked cleaner into the active Zoom tab so localStorage, sessionStorage, Cache API, and IndexedDB can be cleared there. Nothing is injected on install or page load. |
+| `zoom.us` and `zoom.com` hosts | Allows cookie access and the click-time inject only for Zoom sites. |
 
-The extension does not request `<all_urls>`, `browsingData`, `history`, or `scripting`.
+The extension does not request `<all_urls>`, `browsingData`, `history`, or `tabs`. `scripting` is the minimum extra permission the in-page Zoom-origin cleaner needs; `browsingData` is not added because it cannot clear sessionStorage and is broader than the current Zoom tab.
 
 ## If the button does not appear
 
@@ -111,7 +113,7 @@ The checks protect these rules:
 
 - one main button;
 - Zoom-only host access;
-- cookies-only cleanup;
+- user-triggered Zoom-origin cleanup only;
 - no automatic clearing;
 - no remote runtime code;
 - all popup files are included in the store package;
@@ -146,7 +148,7 @@ See [STORE_PREP.md](STORE_PREP.md) for the full Chrome Web Store checklist.
 | `manifest.json` | Chrome settings and permissions. |
 | `popup.html` | Popup layout. |
 | `popup.css` | Shared navy and blue theme. |
-| `popup.js` | Zoom detection, cookie removal, and reload. |
+| `popup.js` | Zoom detection, Zoom-origin cleanup, and reload. |
 | `icons/` | Toolbar, store, and transparent header icons. |
 | `scripts/validate-extension.js` | Source and safety checks. |
 | `scripts/test-popup-e2e.js` | Browser behavior checks. |

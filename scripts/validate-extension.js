@@ -8,16 +8,19 @@
 //
 // Two invariants this file exists to defend:
 //   1. Zoom-only  — no manual / Custom domain / All sites scope, narrow hosts.
-//   2. Cookies-only (v1.2.0) — cookies are the ONLY data type touched, so
-//      `browsingData` and `scripting` must stay out of the manifest and out of
-//      popup.js, and the popup stays a single button with no options.
+//   2. User-triggered Zoom-origin cleanup — cookies + the active Zoom tab's
+//      localStorage / sessionStorage / Cache API / IndexedDB, only after FIX
+//      ZOOM. `scripting` is the minimum extra permission (in-page origin
+//      check). `browsingData` and `<all_urls>` stay out. One button, no options.
 
 const fs   = require('fs');
 const path = require('path');
+const vm   = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 let failed = 0;
 let passed = 0;
+const pendingAsyncChecks = [];
 
 function pass(name) { passed++; console.log(`  PASS  ${name}`); }
 function fail(name, detail) { failed++; console.log(`  FAIL  ${name}${detail ? '  — ' + detail : ''}`); }
@@ -62,9 +65,10 @@ for (const size of ['16', '32', '48', '128']) {
   else fail(`icons.${size} exists`, p || '(missing)');
 }
 
-// Cookies-only: `cookies` to read/delete the jar, `activeTab` to detect the
-// Zoom tab and reload it. Nothing else is needed or allowed.
-const ALLOWED_PERMS = new Set(['cookies', 'activeTab']);
+// Minimal set: `cookies` for the Zoom jar, `activeTab` to detect/reload the
+// Zoom tab, `scripting` to inject a one-shot origin-checked cleaner for
+// localStorage / sessionStorage / Cache API / IndexedDB. Nothing else.
+const ALLOWED_PERMS = new Set(['cookies', 'activeTab', 'scripting']);
 const perms = manifest.permissions || [];
 const extra = perms.filter(p => !ALLOWED_PERMS.has(p));
 if (extra.length === 0) pass(`permissions are exactly the minimal set [${[...ALLOWED_PERMS].join(', ')}]`);
@@ -74,11 +78,22 @@ const missing = [...ALLOWED_PERMS].filter(p => !perms.includes(p));
 if (missing.length === 0) pass('permissions include all required');
 else fail('permissions include all required', `missing: ${missing.join(', ')}`);
 
-// Explicit tripwire for the data types removed in v1.2.0.
-for (const banned of ['browsingData', 'scripting', 'tabs', 'storage', 'webRequest', 'history', '<all_urls>']) {
+if (perms.length === ALLOWED_PERMS.size) pass('permissions were not silently widened beyond the minimal set');
+else fail('permissions were not silently widened beyond the minimal set', `count ${perms.length}`);
+
+// browsingData is broader than the current Zoom tab (and still cannot clear
+// sessionStorage). tabs/storage/webRequest/history/<all_urls> are out of scope.
+for (const banned of ['browsingData', 'tabs', 'storage', 'webRequest', 'history', '<all_urls>']) {
   if (perms.includes(banned)) fail(`permissions do NOT include "${banned}"`);
   else pass(`permissions do NOT include "${banned}"`);
 }
+
+if (manifest.background) fail('manifest has no background / service worker');
+else pass('manifest has no background / service worker');
+if (manifest.content_scripts) fail('manifest has no content_scripts (no hidden page-load injection)');
+else pass('manifest has no content_scripts (no hidden page-load injection)');
+if (manifest.alarms || (manifest.permissions || []).includes('alarms')) fail('manifest has no alarms permission');
+else pass('manifest has no alarms permission');
 
 // host_permissions must stay Zoom-only. Both schemes are listed because Chrome
 // maps a non-Secure cookie to an http:// URL and hides it from an https-only
@@ -117,9 +132,9 @@ const topbarMarkup = popupHtml.match(/<div class="topbar">([\s\S]*?)<\/div>/);
 const footerMarkup = popupHtml.match(/<footer class="footer">([\s\S]*?)<\/footer>/);
 if (topbarMarkup && /id="appVersion"/.test(topbarMarkup[1])) pass('version badge is in the top bar');
 else fail('version badge is in the top bar');
-if (topbarMarkup && />Cookies only<\/span>/.test(topbarMarkup[1])) pass('Cookies only badge is in the top bar');
-else fail('Cookies only badge is in the top bar');
-if (footerMarkup && !/id="appVersion"|>Cookies only<\/span>/.test(footerMarkup[1])) pass('footer contains no version or scope badge');
+if (topbarMarkup && />Zoom-only<\/span>/.test(topbarMarkup[1])) pass('Zoom-only badge is in the top bar');
+else fail('Zoom-only badge is in the top bar');
+if (footerMarkup && !/id="appVersion"|>Zoom-only<\/span>|>Cookies only<\/span>/.test(footerMarkup[1])) pass('footer contains no version or scope badge');
 else fail('footer contains no version or scope badge');
 
 // --- 3. Popup file references --------------------------------------------
@@ -184,6 +199,8 @@ if (buttons.length === 1) pass('popup.html contains exactly one <button>');
 else fail('popup.html contains exactly one <button>', `found ${buttons.length}`);
 if (/id="zoomFixBtn"/.test(popupHtml)) pass('the one button is #zoomFixBtn');
 else fail('the one button is #zoomFixBtn');
+if (/>FIX ZOOM</.test(popupHtml)) pass('the one button is labeled FIX ZOOM');
+else fail('the one button is labeled FIX ZOOM');
 if (/type="button"/.test(popupHtml)) pass('button declares type="button"');
 else fail('button declares type="button"');
 for (const [re, label] of [
@@ -289,13 +306,104 @@ const partitioned = { ...base, partitionKey: { topLevelSite: 'https://zoom.us' }
 (m.cookieKey(base) !== m.cookieKey(otherPath) ? pass : fail)('cookieKey distinguishes paths');
 (m.cookieKey(base) !== m.cookieKey(partitioned) ? pass : fail)('cookieKey distinguishes partitioned cookies');
 
-// --- 7. Zoom-only + cookies-only safety guards --------------------------
-group('zoom-only + cookies-only safety guards');
+group('shouldClearPageDataForTabUrl (inject only into http(s) Zoom tabs)');
+{
+  const injectCases = [
+    { input: 'https://zoom.us/', expect: true },
+    { input: 'https://www.zoom.us/meeting', expect: true },
+    { input: 'https://us02web.zoom.us/j/1', expect: true },
+    { input: 'https://zoom.com/', expect: true },
+    { input: 'http://zoom.us/', expect: true },
+    { input: 'https://example.com/', expect: false },
+    { input: 'https://zoom.us.evil.com/', expect: false },
+    { input: 'https://evilzoom.us/', expect: false },
+    { input: 'https://notzoom.us/', expect: false },
+    { input: 'chrome://extensions/', expect: false },
+    { input: 'https://github.com/', expect: false },
+    { input: '', expect: false },
+    { input: null, expect: false },
+  ];
+  for (const c of injectCases) {
+    const got = m.shouldClearPageDataForTabUrl(c.input);
+    const ok = got === c.expect;
+    (ok ? pass : fail)(
+      `shouldClearPageDataForTabUrl(${JSON.stringify(c.input)}) -> ${c.expect}`,
+      ok ? '' : `got ${JSON.stringify(got)}`
+    );
+  }
+}
+
+group('in-page cleaner origin isolation (localStorage/sessionStorage/Cache/IndexedDB)');
+{
+  function makeStorage() {
+    const data = new Map([['keep', 'yes']]);
+    return {
+      data,
+      getItem(k) { return data.has(k) ? data.get(k) : null; },
+      setItem(k, v) { data.set(k, String(v)); },
+      clear() { data.clear(); },
+      get length() { return data.size; },
+    };
+  }
+
+  async function runCleaner(hostname) {
+    const localStorage = makeStorage();
+    const sessionStorage = makeStorage();
+    const deletedCaches = [];
+    const deletedDbs = [];
+    const sandbox = {
+      location: { hostname, origin: 'https://' + hostname },
+      localStorage,
+      sessionStorage,
+      caches: {
+        keys: async () => ['zoom-cache'],
+        delete: async (k) => { deletedCaches.push(k); return true; },
+      },
+      indexedDB: {
+        databases: async () => [{ name: 'zoom-db' }],
+        deleteDatabase(name) {
+          const req = {};
+          Object.defineProperty(req, 'onsuccess', { set(fn) { deletedDbs.push(name); fn(); } });
+          Object.defineProperty(req, 'onerror', { set() {} });
+          Object.defineProperty(req, 'onblocked', { set() {} });
+          return req;
+        },
+      },
+    };
+    vm.createContext(sandbox);
+    const result = await vm.runInContext('(' + m.clearZoomOriginPageData.toString() + ')()', sandbox);
+    return { result, localStorage, sessionStorage, deletedCaches, deletedDbs };
+  }
+
+  async function runOriginIsolationChecks() {
+    for (const host of ['zoom.us', 'www.zoom.us', 'us02web.zoom.us', 'zoom.com', 'foo.zoom.com']) {
+      const r = await runCleaner(host);
+      (r.result && r.result.skipped === false ? pass : fail)(`cleaner runs on ${host}`, r.result && r.result.reason);
+      (r.localStorage.length === 0 ? pass : fail)(`${host}: localStorage cleared`);
+      (r.sessionStorage.length === 0 ? pass : fail)(`${host}: sessionStorage cleared`);
+      (r.deletedCaches.includes('zoom-cache') ? pass : fail)(`${host}: Cache API deleted`);
+      (r.deletedDbs.includes('zoom-db') ? pass : fail)(`${host}: IndexedDB deleted`);
+    }
+    for (const host of ['example.com', 'zoom.us.evil.com', 'evilzoom.us', 'notzoom.us', 'github.com']) {
+      const r = await runCleaner(host);
+      (r.result && r.result.skipped === true ? pass : fail)(`cleaner refuses ${host}`, JSON.stringify(r.result));
+      (r.localStorage.length === 1 ? pass : fail)(`${host}: localStorage left intact`);
+      (r.sessionStorage.length === 1 ? pass : fail)(`${host}: sessionStorage left intact`);
+      (r.deletedCaches.length === 0 ? pass : fail)(`${host}: Cache API not deleted`);
+      (r.deletedDbs.length === 0 ? pass : fail)(`${host}: IndexedDB not deleted`);
+    }
+  }
+
+  pendingAsyncChecks.push(runOriginIsolationChecks);
+}
+
+// --- 7. Zoom-only + user-triggered cleanup safety guards ----------------
+group('zoom-only + user-triggered cleanup safety guards');
 
 /**
  * Source with comments removed, so the API guards below match real code rather
- * than prose *about* the code (popup.js explains which data types it leaves
- * alone, and that explanation must not trip the guards).
+ * than prose *about* the code (popup.js explains which data types it touches,
+ * and that explanation must not trip the guards).
  */
 function codeOf(rel) {
   return readText(rel)
@@ -317,26 +425,25 @@ function requires(file, re, description) {
   else fail(`${file} ${description}`);
 }
 
-// No install/startup auto-clear hooks.
+// No install/startup/timer auto-clear hooks.
 rejects('popup.js', /chrome\.runtime\.onInstalled\.addListener/, 'has no chrome.runtime.onInstalled listener');
 rejects('popup.js', /chrome\.runtime\.onStartup\.addListener/,   'has no chrome.runtime.onStartup listener');
+rejects('popup.js', /chrome\.alarms/,                            'has no chrome.alarms usage');
+rejects('popup.js', /chrome\.tabs\.onUpdated/,                   'has no tabs.onUpdated auto-clear');
+rejects('popup.js', /chrome\.webNavigation/,                     'has no webNavigation auto-clear');
+rejects('popup.js', /chrome\.browsingData/,                      'never calls chrome.browsingData');
+rejects('popup.js', /serviceWorker/i,                            'never touches service workers');
+rejects('popup.js', /\bclearAllSites\b/,                         'has no clearAllSites helper');
+rejects('popup.js', /\bclearForOrigins\b/,                       'has no origin-scoped browsingData helper');
+rejects('popup.js', /BrowsingDataTypes\b/,                       'has no browsingData type map');
+rejects('popup.js', /\bparseDomainInput\b/,                      'has no parseDomainInput helper');
+rejects('popup.js', /\bwireScopeToggle\b/,                       'has no wireScopeToggle helper');
 
-// Cookies are the only data type touched.
-rejects('popup.js', /chrome\.browsingData/,        'never calls chrome.browsingData');
-rejects('popup.js', /chrome\.scripting/,           'never calls chrome.scripting');
-rejects('popup.js', /\bsessionStorage\b/,          'never touches sessionStorage');
-rejects('popup.js', /\blocalStorage\b/,            'never touches localStorage');
-rejects('popup.js', /\bindexedDB\b/i,              'never touches IndexedDB');
-rejects('popup.js', /\bcacheStorage\b/i,           'never touches cacheStorage');
-rejects('popup.js', /serviceWorker/i,              'never touches service workers');
-rejects('popup.js', /\bclearAllSites\b/,           'has no clearAllSites helper');
-rejects('popup.js', /\bclearForOrigins\b/,         'has no origin-scoped browsingData helper');
-rejects('popup.js', /BrowsingDataTypes\b/,         'has no browsingData type map');
-rejects('popup.js', /\bparseDomainInput\b/,        'has no parseDomainInput helper');
-rejects('popup.js', /\bwireScopeToggle\b/,         'has no wireScopeToggle helper');
-
-// The cookie clear path is the one destructive path, and it is the only one.
 requires('popup.js', /function clearCookiesForHost/, 'defines clearCookiesForHost');
+requires('popup.js', /function clearZoomOriginPageData/, 'defines the in-page Zoom-origin cleaner');
+requires('popup.js', /chrome\.scripting\.executeScript/, 'injects page cleanup via chrome.scripting.executeScript');
+requires('popup.js', /ZOOM DETECTED/, 'popup copy includes ZOOM DETECTED');
+
 const destructive = popupJsCode.match(/chrome\.\w+\.(remove|clear|delete)\w*\s*\(/g) || [];
 if (destructive.length === 1 && /chrome\.cookies\.remove\s*\(/.test(destructive[0])) {
   pass('the only destructive chrome.* call is chrome.cookies.remove');
@@ -344,10 +451,14 @@ if (destructive.length === 1 && /chrome\.cookies\.remove\s*\(/.test(destructive[
   fail('the only destructive chrome.* call is chrome.cookies.remove', destructive.join(', ') || 'none found');
 }
 
+const scriptCalls = popupJsCode.match(/chrome\.scripting\.executeScript\s*\(/g) || [];
+if (scriptCalls.length === 1) pass('chrome.scripting.executeScript is called from exactly one site');
+else fail('chrome.scripting.executeScript is called from exactly one site', `${scriptCalls.length} calls`);
+
 // FIX ZOOM is wired to an explicit click handler.
 requires('popup.js', /zoomFixBtn\.addEventListener\(\s*['"]click['"]\s*,\s*runZoomFix\s*\)/, 'wires zoomFixBtn click to runZoomFix');
 
-// init() never calls a destructive chrome.* API.
+// init() never calls a destructive chrome.* API and never injects.
 const initBodyMatch = popupJs.match(/async function init\s*\([^)]*\)\s*{([\s\S]*?)\n}/);
 if (!initBodyMatch) {
   fail('popup.js init() function found');
@@ -358,6 +469,26 @@ if (!initBodyMatch) {
   else                                          pass('popup.js init() does NOT call chrome.cookies.remove');
   if (/chrome\.tabs\.reload/.test(initBody))    fail('popup.js init() does NOT reload the tab');
   else                                          pass('popup.js init() does NOT reload the tab');
+  if (/chrome\.scripting/.test(initBody))       fail('popup.js init() does NOT inject scripts');
+  else                                          pass('popup.js init() does NOT inject scripts');
+  if (/runZoomFix\s*\(/.test(initBody))         fail('popup.js init() does NOT call runZoomFix');
+  else                                          pass('popup.js init() does NOT call runZoomFix');
+}
+
+// executeScript lives only inside the user-clicked storage helper, not init.
+{
+  const helperMatch = popupJs.match(/async function clearZoomOriginStorageForTab\s*\([^)]*\)\s*{([\s\S]*?)\n}/);
+  if (helperMatch && /chrome\.scripting\.executeScript/.test(helperMatch[1])) {
+    pass('executeScript is gated inside clearZoomOriginStorageForTab');
+  } else {
+    fail('executeScript is gated inside clearZoomOriginStorageForTab');
+  }
+  const runMatch = popupJs.match(/async function runZoomFix\s*\([^)]*\)\s*{([\s\S]*?)\n}/);
+  if (runMatch && /clearZoomOriginStorageForTab/.test(runMatch[1]) && /clearCookiesForHost/.test(runMatch[1])) {
+    pass('runZoomFix performs cookie clear and origin storage clear');
+  } else {
+    fail('runZoomFix performs cookie clear and origin storage clear');
+  }
 }
 
 // --- 8. Report-a-Bug page (#16) ------------------------------------------
@@ -393,8 +524,25 @@ else pass('report.html has no inline event handler attributes');
 // The popup stays network-free — the feature must not leak fetch into it.
 if (/\bfetch\s*\(/.test(popupJsCode)) fail('popup.js still contains no fetch(');
 else pass('popup.js still contains no fetch(');
-if (/\blocalStorage\b/.test(popupJsCode)) fail('popup.js still never touches localStorage');
-else pass('popup.js still never touches localStorage');
+{
+  const fnMatch = popupJs.match(/async function clearZoomOriginPageData\s*\([^)]*\)\s*{([\s\S]*?)\n}/);
+  if (!fnMatch) {
+    fail('clearZoomOriginPageData body found');
+  } else {
+    pass('clearZoomOriginPageData body found');
+    const body = fnMatch[1];
+    if (/localStorage\.clear/.test(body)) pass('in-page cleaner clears localStorage');
+    else fail('in-page cleaner clears localStorage');
+    if (/sessionStorage\.clear/.test(body)) pass('in-page cleaner clears sessionStorage');
+    else fail('in-page cleaner clears sessionStorage');
+    if (/caches\.keys/.test(body) && /caches\.delete/.test(body)) pass('in-page cleaner clears Cache API');
+    else fail('in-page cleaner clears Cache API');
+    if (/indexedDB\.deleteDatabase/.test(body)) pass('in-page cleaner clears IndexedDB');
+    else fail('in-page cleaner clears IndexedDB');
+    if (/not-zoom-origin/.test(body)) pass('in-page cleaner refuses non-Zoom origins');
+    else fail('in-page cleaner refuses non-Zoom origins');
+  }
+}
 
 // report.js may fetch, but every URL it can reach is pinned to the support
 // service; analytics/remote-code stay banned everywhere.
@@ -477,6 +625,11 @@ group('report helpers (sniffImageBytes / titleFrom / bytesToBase64)');
 }
 
 // --- 9. Summary ----------------------------------------------------------
-console.log('');
-console.log(`Passed: ${passed}  Failed: ${failed}`);
-process.exit(failed > 0 ? 1 : 0);
+Promise.all(pendingAsyncChecks.map(fn => fn())).then(() => {
+  console.log('');
+  console.log(`Passed: ${passed}  Failed: ${failed}`);
+  process.exit(failed > 0 ? 1 : 0);
+}).catch(e => {
+  console.error('async checks crashed:', (e && e.stack) || e);
+  process.exit(1);
+});

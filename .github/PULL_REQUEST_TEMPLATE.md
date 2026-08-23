@@ -5,7 +5,7 @@
 ## Checklist
 
 - [ ] `npm test` passes locally (validator + popup e2e).
-- [ ] The change keeps the invariants: Zoom-only hosts, cookies-only clearing,
-      one-button popup, no telemetry, no remote code, no new permissions.
+- [ ] The change keeps the invariants: Zoom-only hosts, user-triggered Zoom-origin
+      cleanup only, one-button popup, no telemetry, no remote code, no `<all_urls>`.
 - [ ] Version numbers were not hand-edited (`scripts/bump-version.js` owns them).
 - [ ] Docs updated if behavior or wording changed.

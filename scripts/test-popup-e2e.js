@@ -7,8 +7,9 @@
  *
  * Loads the real popup.html / popup.css / popup.js in headless Chromium with a
  * recording `chrome.*` mock, drives the single FIX ZOOM button, and asserts
- * what actually happened — cookies removed exactly once each, the right URLs,
- * the right end state, and no read of any non-cookie API.
+ * what actually happened — Zoom cookies removed exactly once each, page-data
+ * cleanup injected only into the Zoom tab and only after the click, unrelated
+ * origins untouched, and no browsingData / hidden background sweep.
  *
  * Run:  node scripts/test-popup-e2e.js      (or: npm run e2e)
  * Exits non-zero if any check fails.
@@ -42,7 +43,7 @@ function mockScript(cfg) {
   return `(() => {
   const CFG = ${JSON.stringify(cfg)};
   const jar = (CFG.jar || []).map(c => Object.assign({ path: '/', secure: true, storeId: '0' }, c));
-  const calls = { getAll: [], remove: [], reload: [], forbidden: [] };
+  const calls = { getAll: [], remove: [], reload: [], executeScript: [], forbidden: [] };
   window.__calls = calls;
   window.__jar = jar;
 
@@ -89,10 +90,29 @@ function mockScript(cfg) {
         return { name: details.name, url: details.url };
       },
     },
+    scripting: {
+      executeScript: async (injection) => {
+        calls.executeScript.push({
+          tabId: injection && injection.target && injection.target.tabId,
+          hasFunc: !!(injection && injection.func),
+        });
+        if (CFG.scriptingThrows) throw new Error('simulated scripting failure');
+        if (CFG.pageCleanup) return [{ result: CFG.pageCleanup }];
+        return [{ result: {
+          skipped: false,
+          origin: 'https://zoom.us',
+          localStorage: true,
+          sessionStorage: true,
+          caches: 1,
+          indexedDB: 1,
+          errors: [],
+        } }];
+      },
+    },
   };
 
-  // Reading any of these is a failure: the cookies-only build must not touch them.
-  for (const banned of ['browsingData', 'scripting', 'storage', 'webRequest', 'history']) {
+  // These APIs must never be touched. scripting is allowed (Zoom-tab inject).
+  for (const banned of ['browsingData', 'storage', 'webRequest', 'history']) {
     Object.defineProperty(chromeMock, banned, {
       get() { calls.forbidden.push(banned); return {}; },
     });
@@ -161,6 +181,21 @@ const ZOOM_JAR = [
   { name: 'zm_aid',    domain: '.zoom.com', secure: true  },
 ];
 
+const MIXED_JAR = [
+  ...ZOOM_JAR,
+  { name: 'sid', domain: 'example.com', secure: true },
+  { name: 'id',  domain: 'github.com',  secure: true },
+];
+
+const zoomOnlyRemoves = removes => removes.every(r => {
+  try {
+    const host = new URL(r.url).hostname;
+    return host === 'zoom.us' || host.endsWith('.zoom.us') || host === 'zoom.com' || host.endsWith('.zoom.com');
+  } catch {
+    return false;
+  }
+});
+
 (async () => {
   // --- 1. Happy path on zoom.us -----------------------------------------
   group('FIX ZOOM on https://zoom.us (4 cookies, no partition support)');
@@ -176,23 +211,29 @@ const ZOOM_JAR = [
     check(before.buttonCount === 1,             'popup renders exactly one button', `got ${before.buttonCount}`);
     check(before.fieldCount === 0,              'popup renders no inputs, checkboxes or selects', `got ${before.fieldCount}`);
     check(before.buttonLabel === 'FIX ZOOM',    'button label is FIX ZOOM', before.buttonLabel);
-    check(before.status === 'READY · zoom.us',  'state pill shows the detected host', before.status);
+    check(before.status === 'ZOOM DETECTED',    'state pill reads ZOOM DETECTED', before.status);
     check(before.version === 'v' + MOCK_VERSION, 'version chip comes from the manifest', before.version);
     check(before.bodyWidth === POPUP_WIDTH,     `popup is ${POPUP_WIDTH}px wide`, String(before.bodyWidth));
     check(before.bodyScrollW <= POPUP_WIDTH,    'no horizontal overflow', `scrollWidth ${before.bodyScrollW}`);
     check(before.calls.remove.length === 0,     'opening the popup removes nothing');
+    check(before.calls.executeScript.length === 0, 'opening the popup does not inject page cleanup');
+    check(before.calls.getAll.length === 0,     'opening the popup does not read the cookie jar');
 
     await clickFix(page);
     const after = await readState(page);
 
     check(after.status === 'CLEARED',            'state pill reads CLEARED', after.status);
-    check(/^Removed 4 Zoom cookies\./.test(after.result), 'result line reports 4 cookies removed', after.result);
+    check(/Removed 4 Zoom cookies\./.test(after.result), 'result line reports 4 cookies removed', after.result);
+    check(/Zoom site data was cleared/.test(after.result), 'result line reports Zoom site data cleared', after.result);
     check(/Tab reloaded\./.test(after.result),   'result line reports the tab reload', after.result);
     check(after.resultClass.includes('good'),    'result line is styled as success', after.resultClass);
     check(after.jarLeft === 0,                   'every Zoom cookie is gone from the jar', `${after.jarLeft} left`);
     check(after.calls.remove.length === 4,       'each cookie removed exactly once', `${after.calls.remove.length} remove calls`);
     check(after.calls.reload.join() === '7',     'active Zoom tab reloaded once', JSON.stringify(after.calls.reload));
-    check(after.calls.forbidden.length === 0,    'never reads chrome.browsingData / scripting / storage', after.calls.forbidden.join(','));
+    check(after.calls.executeScript.length === 1, 'page cleanup injected once after FIX ZOOM', `${after.calls.executeScript.length}`);
+    check(after.calls.executeScript[0].tabId === 7, 'page cleanup targeted the active Zoom tab', JSON.stringify(after.calls.executeScript));
+    check(after.calls.forbidden.length === 0,    'never reads chrome.browsingData / storage / webRequest / history', after.calls.forbidden.join(','));
+    check(zoomOnlyRemoves(after.calls.remove),   'cookie removals stay on Zoom origins');
 
     const urls = after.calls.remove.map(r => r.url).sort();
     check(urls.includes('http://zoom.us/'),      'non-Secure cookie removed over http', urls.join(' '));
@@ -271,7 +312,8 @@ const ZOOM_JAR = [
     jar: [],
   }, async (page) => {
     const before = await readState(page);
-    check(before.status === 'READY · us02web.zoom.us', 'subdomain is detected as Zoom', before.status);
+    check(before.status === 'ZOOM DETECTED', 'subdomain is detected as Zoom', before.status);
+    check(before.buttonHidden === false, 'FIX ZOOM is offered on a Zoom subdomain');
     await clickFix(page);
     const s = await readState(page);
     check(s.status === 'CLEARED',                                'state pill reads CLEARED', s.status);
@@ -290,10 +332,12 @@ const ZOOM_JAR = [
   }, async (page) => {
     await clickFix(page);
     const s = await readState(page);
-    check(s.status === 'ERROR',                        'state pill reads ERROR', s.status);
-    check(/cookie jar/.test(s.result),                 'result line explains the failure', s.result);
-    check(s.resultClass.includes('bad'),               'result line is styled as an error', s.resultClass);
-    check(s.calls.remove.length === 0,                 'no removal attempted', `${s.calls.remove.length}`);
+    check(s.status === 'PARTIAL',                      'state pill reads PARTIAL when cookies fail but site data clears', s.status);
+    check(/cookie jar/.test(s.result),                 'result line explains the cookie-jar failure', s.result);
+    check(/Zoom site data was cleared/.test(s.result), 'result line still reports site-data success', s.result);
+    check(s.resultClass.includes('warn'),              'result line is styled as a warning', s.resultClass);
+    check(s.calls.remove.length === 0,                 'no cookie removal attempted', `${s.calls.remove.length}`);
+    check(s.calls.executeScript.length === 1,          'site-data cleanup still ran', `${s.calls.executeScript.length}`);
     check(s.jarLeft === ZOOM_JAR.length,               'jar untouched', `${s.jarLeft}`);
   });
 
@@ -319,9 +363,68 @@ const ZOOM_JAR = [
       check(s.calls.getAll.length === 0,        'cookie jar is never even read', `${s.calls.getAll.length} getAll calls`);
       check(s.calls.remove.length === 0,        'nothing removed');
       check(s.calls.reload.length === 0,        'nothing reloaded');
+      check(s.calls.executeScript.length === 0, 'page cleanup is not injected on a non-Zoom tab');
       check(s.jarLeft === ZOOM_JAR.length,      'jar untouched', `${s.jarLeft}`);
     });
   }
+
+  // --- 8. Unrelated-origin cookies must survive --------------------------
+  group('unrelated-origin cookies are not cleared');
+  await withPopup({
+    name: 'mixed jar',
+    activeUrl: 'https://zoom.us/',
+    version: MOCK_VERSION,
+    partitionSupport: false,
+    jar: MIXED_JAR,
+  }, async (page) => {
+    await clickFix(page);
+    const s = await readState(page);
+    check(s.status === 'CLEARED', 'mixed jar still reports CLEARED', s.status);
+    check(s.calls.remove.length === 4, 'only the four Zoom cookies are removed', `${s.calls.remove.length}`);
+    check(zoomOnlyRemoves(s.calls.remove), 'no remove URL leaves Zoom origins', JSON.stringify(s.calls.remove.map(r => r.url)));
+    check(s.jarLeft === 2, 'example.com and github.com cookies remain', `${s.jarLeft} left`);
+    const leftover = (await page.evaluate(() => window.__jar.map(c => c.domain))).sort();
+    check(leftover.join(',') === 'example.com,github.com', 'leftover domains are the unrelated origins', leftover.join(','));
+  });
+
+  // --- 9. scripting failure is reported, cookies still attempted ---------
+  group('scripting.executeScript fails after cookies clear');
+  await withPopup({
+    name: 'scripting fails',
+    activeUrl: 'https://zoom.us/',
+    version: MOCK_VERSION,
+    partitionSupport: false,
+    jar: ZOOM_JAR,
+    scriptingThrows: true,
+  }, async (page) => {
+    await clickFix(page);
+    const s = await readState(page);
+    check(s.status === 'PARTIAL', 'state pill reads PARTIAL when site data fails', s.status);
+    check(/Removed 4 Zoom cookies\./.test(s.result), 'cookies were still cleared', s.result);
+    check(/site data could not be cleared/.test(s.result), 'result line reports the storage failure', s.result);
+    check(s.calls.remove.length === 4, 'Zoom cookies were removed before the inject failed', `${s.calls.remove.length}`);
+    check(s.jarLeft === 0, 'Zoom jar empty after cookie clear', `${s.jarLeft}`);
+  });
+
+  // --- 10. cookies + scripting both fail ---------------------------------
+  group('cookies.getAll and scripting both fail');
+  await withPopup({
+    name: 'both fail',
+    activeUrl: 'https://zoom.us/',
+    version: MOCK_VERSION,
+    jar: ZOOM_JAR,
+    getAllThrows: true,
+    scriptingThrows: true,
+  }, async (page) => {
+    await clickFix(page);
+    const s = await readState(page);
+    check(s.status === 'ERROR', 'state pill reads ERROR when nothing succeeded', s.status);
+    check(/cookie jar/.test(s.result), 'cookie-jar failure is named', s.result);
+    check(/site data could not be cleared/.test(s.result), 'site-data failure is named', s.result);
+    check(s.resultClass.includes('bad'), 'result line is styled as an error', s.resultClass);
+    check(s.calls.remove.length === 0, 'no cookie removal', `${s.calls.remove.length}`);
+    check(s.jarLeft === ZOOM_JAR.length, 'jar untouched', `${s.jarLeft}`);
+  });
 
   console.log('');
   console.log(`Passed: ${passed}  Failed: ${failed}`);

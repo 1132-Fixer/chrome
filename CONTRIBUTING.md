@@ -7,7 +7,8 @@ Thanks for helping improve 1132 Fixer for Chrome.
 This extension is deliberately small, and the checks enforce that:
 
 - **Zoom only** — host access is limited to `zoom.us` and `zoom.com`.
-- **Cookies only** — cookies are the only data type the extension touches.
+- **Zoom-origin only** — cookies plus the active Zoom tab's localStorage,
+  sessionStorage, Cache API, and IndexedDB. Nothing runs until FIX ZOOM.
 - **One button** — the popup has a single action and no options.
 - **No telemetry, no remote code** — nothing is fetched or reported at runtime;
   the Report-a-Bug page is the only networked surface and it is user-triggered.

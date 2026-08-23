@@ -1,47 +1,49 @@
 ---
 layout: default
 title: Privacy Policy
-description: Privacy policy for the 1132 Fixer Chrome extension. Zoom cookies only, no telemetry, no remote code; bug reports are optional and send only what you choose to submit.
+description: Privacy policy for the 1132 Fixer Chrome extension. Zoom-origin site data only, no telemetry, no remote code; bug reports are optional and send only what you choose to submit.
 hero_title: Privacy Policy
-hero_sub: The fix deletes Zoom cookies — nothing else — locally in your own browser, and only when you click. The optional bug-report page sends only what you type and attach, only when you press Submit.
+hero_sub: The fix deletes Zoom cookies and this tab's Zoom site data locally in your own browser, and only when you click. The optional bug-report page sends only what you type and attach, only when you press Submit.
 permalink: /privacy.html
 ---
 
-*Last updated: 2026-08-10.*
+*Last updated: 2026-08-23.*
 
 This is the privacy policy for the **1132 Fixer** Chrome extension distributed via the Chrome Web Store and hosted at <https://github.com/1132-Fixer/chrome>. This document is the canonical source and is also published at <https://1132-fixer.github.io/chrome/privacy.html>.
 
 ## Summary
 
-**The fix flow does not collect, transmit, sell, share, or store any personal data.** It deletes **cookies for Zoom domains only** (`zoom.us` and `zoom.com`, including subdomains), only after the user clicks **FIX ZOOM** in the popup, and only inside the user's own browser.
+**The fix flow does not collect, transmit, sell, share, or store any personal data.** It deletes **Zoom-origin browser state only** (`zoom.us` and `zoom.com` cookies, including subdomains, plus the active Zoom tab's `localStorage`, `sessionStorage`, Cache API, and IndexedDB), only after the user clicks **FIX ZOOM** in the popup, and only inside the user's own browser. Detecting a Zoom tab never clears anything by itself.
 
 **Bug reports are optional and entirely user-initiated.** The separate Report-a-Bug page (opened from the popup's "Feedback & Report" link) sends **only what you type and attach** — your description, an optional screenshot you choose, the extension version, and your browser's user-agent string — to the 1132 Fixer support service, and it sends that report **only when you press Submit**. The one thing the page does on its own is a single availability check when it opens (`GET /health`, carrying **no user data**) to decide whether to show the form or a GitHub fallback link; see the dedicated section below.
 
 ## What the extension does
 
 - It is the Chrome sibling of [1132 Fixer for Windows](https://github.com/PrimeUpYourLife/1132-Fixer-Windows/releases/latest). It exists to mitigate Zoom error 1132 and similar stale-cookie sign-in loops.
-- When the active tab is on `zoom.us`, `zoom.com`, or any of their subdomains, the popup shows the detected host and a single **FIX ZOOM** button. Clicking it deletes Zoom cookies and reloads the active Zoom tab.
+- When the active tab is on `zoom.us`, `zoom.com`, or any of their subdomains, the popup shows **ZOOM DETECTED** and a single **FIX ZOOM** button. Clicking it deletes Zoom cookies, clears this tab's Zoom site data, and reloads the active Zoom tab.
 - On any other site (or `chrome://` / `about:` pages), **FIX ZOOM** stays hidden. The website and feedback links remain available. The extension does not request host access to non-Zoom domains.
 - All clearing is **user-triggered**. Opening the popup never deletes anything by itself; no install, startup, page-load, or timer hook clears data.
 
 ## What data the extension may clear (locally, after a user click)
 
-When the user explicitly clicks **FIX ZOOM**, the extension deletes exactly one category of data, using Chrome's built-in `chrome.cookies` API:
+When the user explicitly clicks **FIX ZOOM**, the extension deletes these categories of data, all Zoom-origin only:
 
-- HTTP cookies for `zoom.us`, `zoom.com`, and their subdomains — Secure and non-Secure, and partitioned (CHIPS) cookies where the installed Chrome version supports the partition filter.
+- HTTP cookies for `zoom.us`, `zoom.com`, and their subdomains — Secure and non-Secure, and partitioned (CHIPS) cookies where the installed Chrome version supports the partition filter. Uses Chrome's `chrome.cookies` API.
+- `localStorage` and `sessionStorage` for the **active Zoom tab origin**.
+- Cache API (`caches`) entries for the **active Zoom tab origin**.
+- IndexedDB databases for the **active Zoom tab origin**.
 
-Nothing else is touched. As of v1.2.0 the extension **does not** clear:
+The last three run as a one-shot injected function in that tab. The function re-checks `location.hostname` and **refuses to run on any non-Zoom origin**. No content script is registered, so nothing injects on page load, install, or popup open.
 
-- `localStorage` or `sessionStorage` — for any origin, including Zoom's.
-- Cache API / `cacheStorage`.
-- IndexedDB databases.
+The extension **does not** clear:
+
 - Service worker registrations.
 - The global HTTP cache.
 - Anything at all belonging to a non-Zoom site.
 
-The `browsingData` and `scripting` permissions were removed in v1.2.0 because the extension no longer needs them; without them Chrome cannot clear those data types even if the code tried.
+`browsingData` is **not** requested. It cannot clear `sessionStorage`, and an origins filter is still broader than the current Zoom tab. `scripting` is the minimum extra permission the in-page cleaner needs.
 
-The extension **never reads, transmits, copies, or logs the values** of cookies or page content. Its only operation on cookies is **deletion**. The popup shows a single count (for example, `Removed 17 Zoom cookies.`) — never a value.
+The extension **never reads, transmits, copies, or logs the values** of cookies or page content. Its only operation on cookies is **deletion**. The popup reports a count and whether this tab's Zoom site data was cleared — never a cookie or storage value.
 
 ## What data the extension collects or transmits
 
@@ -68,9 +70,10 @@ The popup's "Feedback & Report" link opens the extension's own Report-a-Bug page
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `cookies`                                           | Enumerate and delete cookies for `zoom.us` and `zoom.com`. Cookie **values** are never read or transmitted.           |
 | `activeTab`                                         | Read the active tab's URL when the popup opens (to detect a Zoom tab) and reload that tab after a successful clear.    |
-| Hosts: `https://*.zoom.us/*`, `https://*.zoom.com/*`, `http://*.zoom.us/*`, `http://*.zoom.com/*` | Required by Chrome's `cookies` API to operate on Zoom domains. Both schemes are listed because Chrome maps a non-Secure cookie to an `http://` URL and hides it from an https-only extension — without `http`, stale non-Secure Zoom cookies would be missed. **No** other hosts are requested. The extension does not inject content scripts at install or page-load time and does not read page content. |
+| `scripting`                                         | Inject a one-shot cleaner into the **active Zoom tab after FIX ZOOM**, so that origin's `localStorage`, `sessionStorage`, Cache API, and IndexedDB can be cleared. The injected function refuses to run on any other host. No content script is registered; nothing injects on install or page load. |
+| Hosts: `https://*.zoom.us/*`, `https://*.zoom.com/*`, `http://*.zoom.us/*`, `http://*.zoom.com/*` | Required by Chrome's `cookies` API to operate on Zoom domains, and by `scripting` to inject only into those hosts. Both schemes are listed because Chrome maps a non-Secure cookie to an `http://` URL and hides it from an https-only extension — without `http`, stale non-Secure Zoom cookies would be missed. **No** other hosts are requested. `<all_urls>` is not requested. |
 
-The extension holds **no** `browsingData` and **no** `scripting` permission.
+The extension holds **no** `browsingData` permission.
 
 ## Children's privacy
 
@@ -95,7 +98,7 @@ If extension behavior changes in a way that affects this policy, this document w
 
 The claims above can be verified directly from this repository:
 
-- `node scripts/validate-extension.js` checks the source. It bans `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, remote code, telemetry, broad host access, and unsafe browser-data APIs in the popup, and pins the Report-a-Bug page's network access to the single support-service origin.
-- `node scripts/test-popup-e2e.js` checks the real popup in headless Chromium. It proves the cookie action stays on Zoom hosts, does not use other browser-data APIs, and makes no runtime network request. `node scripts/test-report-e2e.js` proves the report page shows an honest fallback when the service is down, validates screenshots by content, and sends only the submitted report.
-- `manifest.json` lists only two permissions (`cookies`, `activeTab`) and the four Zoom host patterns documented above.
-- `popup.js` is short enough to audit by reading top to bottom. The only destructive call in the file is `chrome.cookies.remove`, scoped to Zoom domains and gated behind an explicit click on `#zoomFixBtn`.
+- `node scripts/validate-extension.js` checks the source. It bans `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, remote code, telemetry, broad host access, `browsingData`, background/service-worker cleanup, and content-script auto-injection, and pins the Report-a-Bug page's network access to the single support-service origin.
+- `node scripts/test-popup-e2e.js` checks the real popup in headless Chromium. It proves Zoom detection vs non-Zoom pages, that nothing is cleared until **FIX ZOOM**, that unrelated-origin cookies/storage/cache/idb are not cleared, that permissions are not silently widened, that there is no hidden background cleanup, and that failures are reported. `node scripts/test-report-e2e.js` proves the report page shows an honest fallback when the service is down, validates screenshots by content, and sends only the submitted report.
+- `manifest.json` lists three permissions (`cookies`, `activeTab`, `scripting`) and the four Zoom host patterns documented above.
+- `popup.js` is short enough to audit by reading top to bottom. The only destructive `chrome.*` call is `chrome.cookies.remove`, scoped to Zoom domains. Page-data cleanup is a one-shot `chrome.scripting.executeScript` into the active Zoom tab. Both are gated behind an explicit click on `#zoomFixBtn`.

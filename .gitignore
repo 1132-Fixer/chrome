@@ -1,6 +1,7 @@
 node_modules/
 *.zip
 store-assets/
+packages/
 _site/
 .jekyll-cache/
 .DS_Store

@@ -28,8 +28,10 @@ design.
    npm test
    ```
 
-   This runs `scripts/validate-extension.js` (source and safety checks) and
-   `scripts/test-popup-e2e.js` (browser behavior checks).
+   This runs `scripts/validate-extension.js` (source and safety checks),
+   `scripts/test-popup-e2e.js` (browser behavior checks), and
+   `scripts/test-packages.js` (Chrome / Edge / Brave / Firefox zips exist;
+   Chrome-only claims stay on the Chrome package).
 
 ## Pull requests
 

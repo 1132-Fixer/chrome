@@ -137,6 +137,43 @@ else fail('Zoom-only badge is in the top bar');
 if (footerMarkup && !/id="appVersion"|>Zoom-only<\/span>|>Cookies only<\/span>/.test(footerMarkup[1])) pass('footer contains no version or scope badge');
 else fail('footer contains no version or scope badge');
 
+// --- 2b. Browser packaging overlays (#20) --------------------------------
+group('browser packaging overlays (Chrome claims stay Chrome-only)');
+{
+  const { TARGETS, applyOverlay } = require(path.join(ROOT, 'scripts/browser-targets.js'));
+  const ids = Object.keys(TARGETS);
+  if (ids.join(',') === 'chrome,edge,brave,firefox') pass('targets are chrome, edge, brave, firefox');
+  else fail('targets are chrome, edge, brave, firefox', ids.join(', '));
+
+  if (TARGETS.chrome.name === manifest.name && TARGETS.chrome.description === manifest.description) {
+    pass('Chrome overlay matches the live source manifest');
+  } else {
+    fail('Chrome overlay matches the live source manifest');
+  }
+  if (/\bChrome\b/.test(TARGETS.chrome.name) && /\bChrome\b/.test(TARGETS.chrome.description)) {
+    pass('Chrome overlay claims Chrome');
+  } else {
+    fail('Chrome overlay claims Chrome');
+  }
+  for (const id of ['edge', 'brave', 'firefox']) {
+    const blob = TARGETS[id].name + ' ' + TARGETS[id].description;
+    if (/\bChrome\b/.test(blob)) fail(`${id} overlay has no Chrome-only claim`, blob);
+    else pass(`${id} overlay has no Chrome-only claim`);
+  }
+  const fx = applyOverlay(manifest, 'firefox');
+  if (fx.browser_specific_settings && fx.browser_specific_settings.gecko && fx.browser_specific_settings.gecko.id) {
+    pass('Firefox overlay adds gecko id');
+  } else {
+    fail('Firefox overlay adds gecko id');
+  }
+  if (!('minimum_chrome_version' in fx)) pass('Firefox overlay drops minimum_chrome_version');
+  else fail('Firefox overlay drops minimum_chrome_version');
+  const hosts = fx.host_permissions || [];
+  const extraHosts = hosts.filter(h => !ALLOWED_HOSTS.has(h));
+  if (extraHosts.length === 0 && !hosts.includes('<all_urls>')) pass('Firefox overlay keeps Zoom-only hosts');
+  else fail('Firefox overlay keeps Zoom-only hosts', extraHosts.join(', '));
+}
+
 // --- 3. Popup file references --------------------------------------------
 group('popup files');
 const cssMatches = [...popupHtml.matchAll(/<link[^>]+href="([^"]+\.css)"/gi)].map(m => m[1]);

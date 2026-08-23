@@ -3,26 +3,35 @@
 'use strict';
 
 /**
- * Build the Chrome Web Store upload zip, cross-platform and dependency-free.
+ * Build browser-target zips, cross-platform and dependency-free.
  *
  *   node scripts/package-extension.js
- *   -> store-assets/1132-fixer-chrome-<version>.zip
+ *     -> store-assets/1132-fixer-chrome-<version>.zip
+ *   node scripts/package-extension.js --all
+ *     -> packages/1132-fixer-{chrome,edge,brave,firefox}-<version>.zip
+ *   node scripts/package-extension.js firefox
+ *     -> packages/1132-fixer-firefox-<version>.zip
  *
- * Ships exactly the runtime files plus the two documents reviewers benefit from
- * (LICENSE, README.md, PRIVACY_POLICY.md). Dev tooling, store assets, CI config
- * and the git metadata are deliberately excluded — see STORE_PREP.md.
+ * Ships exactly the runtime files plus LICENSE, README.md, PRIVACY_POLICY.md.
+ * Dev tooling, store assets, CI config and git metadata are excluded.
  *
- * `manifest.json` lands at the zip root, which the Web Store requires.
- * Timestamps are fixed so the same tree always produces the same bytes.
+ * Chrome keeps the source manifest.json bytes. Other targets overlay name /
+ * description (and Firefox gecko settings) from scripts/browser-targets.js.
+ * One zip is not universal. This script does not publish.
+ *
+ * `manifest.json` lands at the zip root. Timestamps are fixed so the same
+ * tree always produces the same bytes.
  */
 
 const fs   = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { TARGETS, applyOverlay } = require('./browser-targets');
 
-const ROOT     = path.resolve(__dirname, '..');
-const OUT_DIR  = path.join(ROOT, 'store-assets');
-const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
+const ROOT         = path.resolve(__dirname, '..');
+const OUT_DIR      = path.join(ROOT, 'store-assets');
+const PACKAGES_DIR = path.join(ROOT, 'packages');
+const manifest     = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 
 const ENTRIES = [
   'manifest.json',
@@ -118,34 +127,100 @@ function endRecord(count, cdSize, cdOffset) {
 }
 
 // --- build ---------------------------------------------------------------
-const missing = ENTRIES.filter(e => !fs.existsSync(path.join(ROOT, e)));
-if (missing.length) {
-  console.error('cannot package, missing files:\n  ' + missing.join('\n  '));
-  process.exit(1);
+function assertEntriesExist() {
+  const missing = ENTRIES.filter(e => !fs.existsSync(path.join(ROOT, e)));
+  if (missing.length) {
+    throw new Error('cannot package, missing files:\n  ' + missing.join('\n  '));
+  }
 }
 
-fs.mkdirSync(OUT_DIR, { recursive: true });
-const outPath = path.join(OUT_DIR, `1132-fixer-chrome-${manifest.version}.zip`);
-
-const parts   = [];
-const central = [];
-let offset = 0;
-
-for (const name of ENTRIES) {
-  const data     = fs.readFileSync(path.join(ROOT, name));
-  const deflated = zlib.deflateRawSync(data, { level: 9 });
-  const header   = localHeader(name, data, deflated);
-  parts.push(header, deflated);
-  central.push(centralEntry(name, data, deflated, offset));
-  offset += header.length + deflated.length;
-  console.log(`  + ${name}  (${data.length} -> ${deflated.length} bytes)`);
+function fileBytes(targetId, name) {
+  if (name === 'manifest.json' && targetId !== 'chrome') {
+    const overlaid = applyOverlay(manifest, targetId);
+    return Buffer.from(JSON.stringify(overlaid, null, 2) + '\n');
+  }
+  return fs.readFileSync(path.join(ROOT, name));
 }
 
-const cd     = Buffer.concat(central);
-const zipBuf = Buffer.concat([...parts, cd, endRecord(ENTRIES.length, cd.length, offset)]);
-fs.writeFileSync(outPath, zipBuf);
+function writeZip(fileMap, outPath) {
+  const parts   = [];
+  const central = [];
+  let offset = 0;
+  for (const { name, data } of fileMap) {
+    const deflated = zlib.deflateRawSync(data, { level: 9 });
+    const header   = localHeader(name, data, deflated);
+    parts.push(header, deflated);
+    central.push(centralEntry(name, data, deflated, offset));
+    offset += header.length + deflated.length;
+    console.log(`  + ${name}  (${data.length} -> ${deflated.length} bytes)`);
+  }
+  const cd     = Buffer.concat(central);
+  const zipBuf = Buffer.concat([...parts, cd, endRecord(fileMap.length, cd.length, offset)]);
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, zipBuf);
+  return zipBuf.length;
+}
 
-console.log('');
-console.log(`wrote ${path.relative(ROOT, outPath)}  (${zipBuf.length} bytes, ${ENTRIES.length} entries)`);
-console.log(`manifest.json is at the zip root: ${ENTRIES[0] === 'manifest.json' ? 'yes' : 'NO'}`);
-console.log(`version: ${manifest.version}`);
+function packageTarget(targetId) {
+  const target = TARGETS[targetId];
+  if (!target) throw new Error('unknown packaging target: ' + targetId);
+  assertEntriesExist();
+  const fileMap = ENTRIES.map(name => ({ name, data: fileBytes(targetId, name) }));
+  const fileName = `${target.zipStem}-${manifest.version}.zip`;
+  const outPath = path.join(PACKAGES_DIR, fileName);
+  console.log(`\n[${targetId}]`);
+  const bytes = writeZip(fileMap, outPath);
+  const written = [outPath];
+  if (targetId === 'chrome') {
+    const storePath = path.join(OUT_DIR, fileName);
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    fs.copyFileSync(outPath, storePath);
+    written.push(storePath);
+  }
+  console.log(`wrote ${path.relative(ROOT, outPath)}  (${bytes} bytes, ${ENTRIES.length} entries)`);
+  console.log(`manifest.json is at the zip root: ${ENTRIES[0] === 'manifest.json' ? 'yes' : 'NO'}`);
+  console.log(`version: ${manifest.version}`);
+  return written;
+}
+
+function packageAll() {
+  const paths = [];
+  for (const id of Object.keys(TARGETS)) {
+    paths.push(...packageTarget(id));
+  }
+  return paths;
+}
+
+function parseArgs(argv) {
+  const args = argv.slice(2).filter(a => a !== '--');
+  if (args.length === 0) return { mode: 'chrome' };
+  if (args.length === 1 && args[0] === '--all') return { mode: 'all' };
+  if (args.length === 1 && TARGETS[args[0]]) return { mode: args[0] };
+  throw new Error('usage: node scripts/package-extension.js [--all | chrome | edge | brave | firefox]');
+}
+
+function main() {
+  const { mode } = parseArgs(process.argv);
+  if (mode === 'all') packageAll();
+  else packageTarget(mode);
+}
+
+if (require.main === module) {
+  try {
+    main();
+  } catch (err) {
+    console.error(err.message || err);
+    process.exit(1);
+  }
+} else {
+  module.exports = {
+    ENTRIES,
+    TARGETS,
+    ROOT,
+    PACKAGES_DIR,
+    OUT_DIR,
+    packageTarget,
+    packageAll,
+    applyOverlay,
+  };
+}

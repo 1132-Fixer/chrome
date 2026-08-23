@@ -4,7 +4,7 @@
  * Report-a-bug page (#16) — the ONLY file in this extension that talks to the
  * network, and it talks to exactly one place: the 1132 Fixer support service.
  * Everything is user-initiated — the page sends nothing until the user clicks
- * Submit. The popup's fix flow stays cookies-only and network-free.
+ * Submit. The popup's fix flow stays Zoom-origin-only and network-free.
  *
  * The form renders only when GET /health advertises capabilities.screenshots
  * (the support platform is live end-to-end); otherwise the page shows the

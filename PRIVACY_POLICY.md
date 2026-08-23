@@ -89,7 +89,7 @@ If extension behavior changes in a way that affects this policy, this document w
 
 ## Contact
 
-- **Owner:** `1132 Fixer` — published by PrimeUpYourLife.
+- **Owner:** `1132 Fixer` — published on the Chrome Web Store by `High-Texas` (the listing shows "Offered by High-Texas").
 - **Support / privacy questions:** open an issue at <https://github.com/1132-Fixer/chrome/issues> — this is the canonical public contact point for this extension.
 - **Repository:** <https://github.com/1132-Fixer/chrome>.
 - **Hosted privacy URL:** <https://1132-fixer.github.io/chrome/privacy.html>.

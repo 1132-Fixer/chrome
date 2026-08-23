@@ -109,8 +109,8 @@ Build them all with `npm run assets` (screenshot 4 is optional: `node scripts/ma
 | Field           | Value                                                              |
 | --------------- | ------------------------------------------------------------------ |
 | Official URL    | None — leave unset until a domain is Search-Console-verified        |
-| Homepage URL    | `https://github.com/PrimeUpYourLife/1132-Fixer-Chrome`             |
-| Support URL     | `https://github.com/PrimeUpYourLife/1132-Fixer-Chrome/issues`      |
+| Homepage URL    | `https://github.com/1132-Fixer/chrome`                             |
+| Support URL     | `https://github.com/1132-Fixer/chrome/issues`                      |
 | Mature content  | No                                                                 |
 | Item support    | On                                                                 |
 
